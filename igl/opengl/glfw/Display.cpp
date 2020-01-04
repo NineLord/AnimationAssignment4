@@ -137,45 +137,48 @@ bool Display::launch_rendering(bool loop)
 	igl::opengl::glfw::Viewer* scn = renderer->GetScene();
 	while (!glfwWindowShouldClose(window))
 	{
-		if (scn->isIk) {
-			igl::opengl::ViewerData* last = nullptr;
-			igl::opengl::ViewerData* first = nullptr;
-			Vector3f destPoint;
-			// Finding the first and last cylinder, finding shprere
-			for (unsigned int i = 0; i < scn->data_list.size(); i++) {
-				if (strcmp(&scn->data_list[i].model[0], "sphere") && !scn->data_list[i].father) {
-					last = &scn->data_list[i];
-				}
-				if (!strcmp(&scn->data_list[i].model[0], "sphere")) {
-					Vector4f centerSphere(0, 0, 0, 1);
-					destPoint = (scn->MakeTrans() * scn->data_list[i].MakeTrans() * centerSphere).block<3, 1>(0, 0);
-				}
-				if (strcmp(&scn->data_list[i].model[0], "sphere") && !scn->data_list[i].son) {
-					first = &scn->data_list[i];
-				}
-			}
+		if (scn->move_models) {
+			// Assignment 3 
 
-			Eigen::Vector3f bottom = first->getBottomInWorld(scn->MakeTrans());
-			float distance = sqrt(pow(destPoint(0) - bottom(0), 2) +
-				pow(destPoint(1) - bottom(1), 2) +
-				pow(destPoint(2) - bottom(2), 2));
-			if (distance <= scn->lengthOfArm)
-			{
-				CalculateIK(scn, last, destPoint);
-				float delta;
-				Eigen::Vector3f top = last->getTopInWorld(scn->MakeTrans());
-				delta = sqrt(pow(destPoint(0) - top(0), 2) +
-					pow(destPoint(1) - top(1), 2) +
-					pow(destPoint(2) - top(2), 2));
-				if (delta <= 0.1) {
-					cout << delta << endl;
-					scn->isIk = false;
-				}
-			}
-			else {
-				cout << "Distance too far." << endl;
-				scn->isIk = false;
-			}
+			//igl::opengl::ViewerData* last = nullptr;
+			//igl::opengl::ViewerData* first = nullptr;
+			//Vector3f destPoint;
+			//// Finding the first and last cylinder, finding shprere
+			//for (unsigned int i = 0; i < scn->data_list.size(); i++) {
+			//	if (strcmp(&scn->data_list[i].model[0], "sphere") && !scn->data_list[i].father) {
+			//		last = &scn->data_list[i];
+			//	}
+			//	if (!strcmp(&scn->data_list[i].model[0], "sphere")) {
+			//		Vector4f centerSphere(0, 0, 0, 1);
+			//		destPoint = (scn->MakeTrans() * scn->data_list[i].MakeTrans() * centerSphere).block<3, 1>(0, 0);
+			//	}
+			//	if (strcmp(&scn->data_list[i].model[0], "sphere") && !scn->data_list[i].son) {
+			//		first = &scn->data_list[i];
+			//	}
+			//}
+			//Eigen::Vector3f bottom = first->getBottomInWorld(scn->MakeTrans());
+			//float distance = sqrt(pow(destPoint(0) - bottom(0), 2) +
+			//	pow(destPoint(1) - bottom(1), 2) +
+			//	pow(destPoint(2) - bottom(2), 2));
+			//if (distance <= scn->lengthOfArm)
+			//{
+			//	CalculateIK(scn, last, destPoint);
+			//	float delta;
+			//	Eigen::Vector3f top = last->getTopInWorld(scn->MakeTrans());
+			//	delta = sqrt(pow(destPoint(0) - top(0), 2) +
+			//		pow(destPoint(1) - top(1), 2) +
+			//		pow(destPoint(2) - top(2), 2));
+			//	if (delta <= 0.1) {
+			//		cout << delta << endl;
+			//		scn->isIk = false;
+			//	}
+			//}
+			//else {
+			//	cout << "Distance too far." << endl;
+			//	scn->isIk = false;
+			//}
+
+			scn->data().Translate(scn->data().velocity * scn->data().direction);
 
 		}
 

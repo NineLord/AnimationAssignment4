@@ -81,6 +81,8 @@ public:
   MatrixXi EI;
   VectorXi EMAP;
   PriorityQueue Q;
+  float velocity;
+  Vector3f direction;
   PriorityQueue::iterator Qiterator;
   vector<PriorityQueue::iterator> Qit;
   MatrixXd C;  

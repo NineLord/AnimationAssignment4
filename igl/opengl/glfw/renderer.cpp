@@ -125,28 +125,28 @@ void Renderer::MouseProcessing(int button)
 {
 	if (button == 1) {
 		// World
-		if (scn->worldSelect == true/*selected_data_index == scn->data_list.size()*/) {
-			scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(-xrel / 500.0f, 0, 0), false);
-			scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, yrel / 500.0f, 0), false);
+		if (scn->worldSelect) {
+			scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(-xrel / 500.0f, 0, 0), true);
+			scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, yrel / 500.0f, 0), true);
 		}
 		// Selected object
 		else {
-				scn->data().Translate(Eigen::Vector3f(-xrel / 500.0f, 0, 0));
-				scn->data().Translate(Eigen::Vector3f(0, yrel / 500.0f, 0));
+				scn->data().Translate(Eigen::Vector3f(-xrel / 1000.0f, 0, 0));
+				scn->data().Translate(Eigen::Vector3f(0, yrel / 1000.0f, 0));
 		}
 	}
 	else {
 		// World
-		if (scn->worldSelect == true/*selected_data_index == scn->data_list.size()*/) {
-			scn->RotateInSystem(scn->MakeTrans(), Eigen::Vector3f(1, 0, 0), xrel / 180.0f, true);
-			scn->RotateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, 0, 1), yrel / 180.0f, true);
+		if (scn->worldSelect) {
+			scn->RotateInSystem(scn->MakeTrans(), Eigen::Vector3f(1, 0, 0), xrel / 380.0f, true);
+			scn->RotateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, 0, 1), yrel / 380.0f, true);
 		}
 		// Selected object
 		else {
-			// scn->data().MyRotate(Eigen::Vector3f(1, 0, 0), xrel / 180.0f, false);
-			// scn->data().MyRotate(Eigen::Vector3f(0, 0, 1), yrel / 180.0f, false);
-			scn->data().MyRotateX(xrel / 180.0f);
-			scn->data().MyRotateY(yrel / 180.0f);
+			 scn->data().MyRotate(Eigen::Vector3f(1, 0, 0), xrel / 180.0f, true);
+			 scn->data().MyRotate(Eigen::Vector3f(0, 0, 1), yrel / 180.0f, true);
+			//scn->data().MyRotateX(xrel / 180.0f);
+			//scn->data().MyRotateY(yrel / 180.0f);
 		}
 	}
 

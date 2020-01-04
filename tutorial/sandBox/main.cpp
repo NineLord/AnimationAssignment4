@@ -17,14 +17,9 @@ bool read_Meshes(igl::opengl::glfw::Viewer* viewer, string file) {
 	conFile.open(file, ios::in);
 	if (conFile.is_open()) {
 		while (getline(conFile, line)) {
-			//model_name = line;
-			//model_name.erase(model_name.find_last_of('.'));
-			//model_name.erase(0, model_name.find_last_of('\\') + 1);
-			//if (!strcmp(&model_name[0], "octopus-low")) {
-				viewer->load_mesh_from_file(line);
-				viewer->load_mesh_from_file(line);
-				break;
-			//}
+			viewer->load_mesh_from_file(line);
+			viewer->load_mesh_from_file(line);
+			break;
 		}
 		conFile.close();
 		return true;
@@ -36,12 +31,20 @@ bool read_Meshes(igl::opengl::glfw::Viewer* viewer, string file) {
 }
 
 void adjustModels(igl::opengl::glfw::Viewer* viewer) {
-	viewer->TranslateInSystem(viewer->MakeTrans(), Vector3f(0, 0, -1), true);
-	viewer->selected_data_index = 0;
-	viewer->data().Translate(Vector3f(-0.5, 0, 0));
-	viewer->selected_data_index += 1;
-	viewer->data().Translate(Vector3f(0.5, 0, 0));
-
+	
+	for (auto i = 0; i < 2; i++) {
+		viewer->selected_data_index = i;
+		viewer->data().MyRotateX(2.5);
+		viewer->data().MyRotateY(0.35);
+		float val;
+		i == 0 ? val = 1.5 : val = -1.5;
+		viewer->data().Translate(Vector3f(val, 0, 0));
+		viewer->data().velocity = 0.05;
+		viewer->data().direction = Vector3f(0, 0, 0);
+	}
+	
+	// Adjusting the "camera"
+	viewer->TranslateInSystem(viewer->MakeTrans(), Vector3f(0, 0, -2), true);
 }
 
 // Assignment 3 //

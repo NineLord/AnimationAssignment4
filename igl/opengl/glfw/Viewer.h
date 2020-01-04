@@ -137,9 +137,14 @@ public:
     size_t selected_data_index;
     int next_data_id;
 	bool worldSelect;
-	float lengthOfArm;
-	bool isIk = false;
+	
+	// Assignment 3
 
+	//float lengthOfArm;
+	//bool isIk = false;
+
+	// Assignment 4
+	bool move_models = false;
     
 
     // List of registered plugins

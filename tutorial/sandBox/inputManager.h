@@ -88,7 +88,8 @@ static void glfw_mouse_scroll(GLFWwindow* window, double x, double y)
 {
 	Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
 	igl::opengl::glfw::Viewer* scn = rndr->GetScene();
-	scn->worldSelect ? scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, 0, y / 500.0f), false) :
+	scn->worldSelect ? 
+		scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, 0, y / 500.0f), false) :
 		scn->data().Translate(Eigen::Vector3f(0, 0, y / 500.0f));
 }
 
@@ -170,7 +171,7 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 		}
 		case ' ':
 		{
-			scn->isIk = !(scn->isIk);
+			scn->move_models = !(scn->move_models);
 			break;
 		}
 		case 'L':
@@ -185,7 +186,8 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			rndr->core().orthographic = !rndr->core().orthographic;
 			break;
 		}
-		case 'P':
+		// Assignment 3
+		/*case 'P':
 		case 'p':
 		{
 			if (scn->worldSelect) {
@@ -207,8 +209,8 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 				std::cout << trans.block<3, 3>(0, 0) << std::endl;
 			}
 			break;
-		}
-		case 'T':
+		}*/
+		/*case 'T':
 		case 't':
 		{
 			//rndr->core().toggle(scn->data().show_faces);
@@ -217,7 +219,7 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 				cout << scn->data().getTopInWorld(scn->MakeTrans()) << endl;
 			}
 			break;
-		}
+		} */
 		case '1':
 		case '2':
 		{
@@ -244,41 +246,37 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 		case ':':
 			scn->data().show_faceid = !scn->data().show_faceid;
 			break;
+			// Assignment 3
+			/*case GLFW_KEY_UP:
+				if (strcmp(&(scn->data().model[0]), "sphere"))
+					scn->data().MyRotateX(-alpha);
+				break;
+			case GLFW_KEY_DOWN:
+				if (strcmp(&(scn->data().model[0]), "sphere"))
+					scn->data().MyRotateX(alpha);
+				break;
+			case GLFW_KEY_LEFT:
+				if (strcmp(&(scn->data().model[0]), "sphere")) {
+					scn->data().MyRotateY(alpha);
+				}
+				break;
+			case GLFW_KEY_RIGHT:
+				if (strcmp(&(scn->data().model[0]), "sphere")) {
+					scn->data().MyRotateY(-alpha);
+				}
+				break; */
+
 		case GLFW_KEY_UP:
-			if (strcmp(&(scn->data().model[0]), "sphere"))
-				scn->data().MyRotateX(-alpha);
+			if (scn->move_models) scn->data().direction = Vector3f(0, 1, 0);
 			break;
 		case GLFW_KEY_DOWN:
-			if (strcmp(&(scn->data().model[0]), "sphere"))
-				scn->data().MyRotateX(alpha);
+			if (scn->move_models) scn->data().direction = Vector3f(0, -1, 0);
 			break;
 		case GLFW_KEY_LEFT:
-			if (strcmp(&(scn->data().model[0]), "sphere")) {
-				scn->data().MyRotateY(alpha);
-				/*Eigen::Matrix4f product = scn->MakeTrans();
-				if (scn->data().mySon == nullptr)
-					scn->data().MyRotateY(product, alpha);
-				else {
-					igl::opengl::ViewerData* son = scn->data().mySon;
-
-
-					while (son->mySon != nullptr) {
-						son = son->mySon;
-					}
-					while (son != &(scn->data())) {
-						product = product * son->MakeTrans();
-						son = son->myFather;
-					}
-
-					scn->data().MyRotateY(product, alpha);
-					//scn->data().MyRotateY(scn->data().getRy(), 15 / 180.0f);
-				}*/
-			}
+			if (scn->move_models) scn->data().direction = Vector3f(-1, 0, 0);
 			break;
 		case GLFW_KEY_RIGHT:
-			if (strcmp(&(scn->data().model[0]), "sphere")) {
-				scn->data().MyRotateY(-alpha);
-			}
+			if (scn->move_models) scn->data().direction = Vector3f(1, 0, 0);
 			break;
 		default: break;//do nothing
 		}
