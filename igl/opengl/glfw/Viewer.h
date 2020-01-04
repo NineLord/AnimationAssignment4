@@ -144,6 +144,7 @@ public:
 	//bool isIk = false;
 
 	// Assignment 4
+	void isIntersection();
 	bool move_models = false;
     
 

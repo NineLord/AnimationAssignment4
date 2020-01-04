@@ -137,6 +137,7 @@ bool Display::launch_rendering(bool loop)
 	igl::opengl::glfw::Viewer* scn = renderer->GetScene();
 	while (!glfwWindowShouldClose(window))
 	{
+		scn->isIntersection();
 		if (scn->move_models) {
 			// Assignment 3 
 
@@ -177,9 +178,8 @@ bool Display::launch_rendering(bool loop)
 			//	cout << "Distance too far." << endl;
 			//	scn->isIk = false;
 			//}
-
 			scn->data().Translate(scn->data().velocity * scn->data().direction);
-
+			
 		}
 
 		double tic = igl::get_seconds();
