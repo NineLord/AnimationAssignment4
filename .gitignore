@@ -1,5 +1,7 @@
-# Directories
-build
-external
+##### Directories #####
+# build
+# external
+*
 
-# Files
+######## Files ########
+!E:\Users\Shaked\Documents\OneDrive\C++\GitHub\AnimationAssignment4\tutorial\sandBox\main.cpp
