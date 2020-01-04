@@ -170,7 +170,7 @@ namespace glfw
 		Eigen::MatrixXi E;
 		Eigen::VectorXi EMAP;
 		double max_distance = 1;
-		igl::AABB<Eigen::MatrixXd, 3> tree;
+		
 		if (!igl::readMESH(mesh_file_name_string, V, T, F))
 			return false;
 
@@ -179,7 +179,7 @@ namespace glfw
 		MatrixXd C;
 		igl::point_mesh_squared_distance(V, V, F, sqrD, I, C);
 		max_distance = sqrt(sqrD.maxCoeff());
-		tree.init(V, F);
+		data().tree.init(V, F);
 
 		// Precompute vertex,edge and face normals
 		igl::per_face_normals(V, F, FN);

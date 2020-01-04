@@ -18,6 +18,8 @@
 #include <vector>
 #include <set>
 
+#include <igl\AABB.h>
+
 // Alec: This is a mesh class containing a variety of data types (normals,
 // overlays, material colors, etc.)
 //
@@ -105,6 +107,9 @@ public:
   Vector4f bottomF;
   bool shimi = true;
 
+//------------------------------------------------------------------------------------------//
+/* ASSIGNMENT 4 */
+  igl::AABB<Eigen::MatrixXd, 3> tree;
 //------------------------------------------------------------------------------------------//
 
   IGL_INLINE void set_visible(bool value, unsigned int core_id = 1);
