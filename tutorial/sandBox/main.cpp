@@ -1,10 +1,11 @@
 
 #include "igl/opengl/glfw/renderer.h"
 #include "tutorial/sandBox/inputManager.h"
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
-  Display *disp = new Display(1000, 800, "Wellcome");
+  /*Display *disp = new Display(1000, 800, "Wellcome");
   Renderer renderer;
   igl::opengl::glfw::Viewer viewer;
   //viewer.load_mesh_from_file("C:/Dev/EngineIGLnew/tutorial/data/sphere.obj");
@@ -15,5 +16,6 @@ int main(int argc, char *argv[])
   disp->SetRenderer(&renderer);
   disp->launch_rendering(true);
   
-  delete disp;
+  delete disp;*/
+    std::cout << "Hello World!" << std::endl;
 }
