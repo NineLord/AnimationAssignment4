@@ -130,6 +130,19 @@ static void CalculateIK(igl::opengl::glfw::Viewer* scn, igl::opengl::ViewerData*
 	}
 }
 
+static void draw_box(Eigen::AlignedBox3d &box) {
+	
+}
+
+static void draw_tree(igl::AABB<Eigen::MatrixXd, 3>& tree) {
+	draw_box(tree.m_box);
+
+	if (tree.m_left != nullptr)
+		draw_tree(*(tree.m_left));
+
+	if (tree.m_right != nullptr)
+		draw_tree(*(tree.m_right));
+}
 
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int modifier)
 {
@@ -266,6 +279,10 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 				}
 				break; */
 
+		case 'K':
+		case 'k':
+			draw_tree(scn->data().tree);
+			break;
 		case GLFW_KEY_UP:
 			if (scn->move_models) scn->data().direction = Vector3f(0, 1, 0);
 			break;
