@@ -109,7 +109,13 @@ public:
 
 //------------------------------------------------------------------------------------------//
 /* ASSIGNMENT 4 */
+  // Functions:
+  void drawBox(AlignedBox<double, 3> m_box, RowVector3d color);
+  void drawBoxes(igl::AABB<Eigen::MatrixXd, 3>* tree);
+
+  // Fields:
   igl::AABB<Eigen::MatrixXd, 3> tree;
+
 //------------------------------------------------------------------------------------------//
 
   IGL_INLINE void set_visible(bool value, unsigned int core_id = 1);

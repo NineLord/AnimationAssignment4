@@ -21,7 +21,7 @@ bool read_Meshes(igl::opengl::glfw::Viewer* viewer, string file) {
 			viewer->load_mesh_from_file(line);
 			break;
 		}
-		conFile.close();
+		conFile.close();		
 		return true;
 	}
 	else {
@@ -31,7 +31,7 @@ bool read_Meshes(igl::opengl::glfw::Viewer* viewer, string file) {
 }
 
 void adjustModels(igl::opengl::glfw::Viewer* viewer) {
-	
+
 	for (auto i = 0; i < 2; i++) {
 		viewer->selected_data_index = i;
 		viewer->data().MyRotateX(2.5);
@@ -40,9 +40,9 @@ void adjustModels(igl::opengl::glfw::Viewer* viewer) {
 		i == 0 ? val = 1.5 : val = -1.5;
 		viewer->data().Translate(Vector3f(val, 0, 0));
 		viewer->data().velocity = 0.05;
-		viewer->data().direction = Vector3f(0, 0, 0);
+		i == 0 ? val = -1 : val = 1;
+		viewer->data().direction = Vector3f(val, 0, 0);
 	}
-	
 	// Adjusting the "camera"
 	viewer->TranslateInSystem(viewer->MakeTrans(), Vector3f(0, 0, -2), true);
 }

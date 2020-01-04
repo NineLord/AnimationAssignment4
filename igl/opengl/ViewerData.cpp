@@ -393,6 +393,70 @@ Eigen::Vector3f igl::opengl::ViewerData::getBottomInWorld(Eigen::Matrix4f& world
 	}
 	return (trans * MakeTrans() * bottomF).block<3, 1>(0, 0);
 }
+
+// --------------------------------------------------------------------------------------------
+// Assignment 4
+
+void::igl::opengl::ViewerData::drawBox(AlignedBox<double, 3> m_box, RowVector3d color) {
+	MatrixXd boxPoints(8, 3);
+	Eigen::MatrixXi boxLines(12, 2);
+
+	boxPoints.row(1) = m_box.corner(m_box.BottomRightFloor);
+	boxPoints.row(2) = m_box.corner(m_box.TopRightFloor);
+	boxPoints.row(5) = m_box.corner(m_box.BottomRightCeil);
+	boxPoints.row(6) = m_box.corner(m_box.TopRightCeil);
+	boxPoints.row(4) = m_box.corner(m_box.BottomLeftCeil);
+	boxPoints.row(7) = m_box.corner(m_box.TopLeftCeil);
+	boxPoints.row(0) = m_box.corner(m_box.BottomLeftFloor);
+	boxPoints.row(3) = m_box.corner(m_box.TopLeftFloor);
+
+	boxLines <<
+		0, 1,
+		1, 2,
+		2, 3,
+		3, 0,
+		4, 5,
+		5, 6,
+		6, 7,
+		7, 4,
+		0, 4,
+		1, 5,
+		2, 6,
+		7, 3;
+
+	line_width = 3;
+	point_size = 10;
+	show_lines = false;
+
+	// Plot the corners of the bounding box as points
+	add_points(boxPoints, color);
+
+	// Plot the edges of the bounding box
+	for (unsigned i = 0;i < boxLines.rows(); ++i)
+		add_edges
+		(
+			boxPoints.row(boxLines(i, 0)),
+			boxPoints.row(boxLines(i, 1)),
+			color
+		);
+}
+
+void::igl::opengl::ViewerData::drawBoxes(igl::AABB<Eigen::MatrixXd, 3>* tree) {
+	if (!tree) return;
+	Vector3d top_edge(tree->m_box.corner(tree->m_box.TopRightCeil)
+							  - tree->m_box.corner(tree->m_box.TopLeftCeil));
+	double length_of_top_edge = sqrt(pow(top_edge(0),2) + pow(top_edge(1),2) + pow(top_edge(2),2));
+	if (length_of_top_edge < 0.25)
+		return;
+	drawBox(tree->m_box, Eigen::RowVector3d::Random());
+	//if (tree->m_left)
+	//	drawBox(tree->m_left->m_box, Eigen::RowVector3d::Random());
+	if (tree->m_right)
+		drawBox(tree->m_right->m_box, Eigen::RowVector3d::Random().normalized());
+	//drawBoxes(tree->m_left);
+	drawBoxes(tree->m_right);
+}
+
 // --------------------------------------------------------------------------------------------
 
 IGL_INLINE void igl::opengl::ViewerData::set_colors(const Eigen::MatrixXd &C)

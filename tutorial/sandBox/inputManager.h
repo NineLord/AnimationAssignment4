@@ -148,6 +148,12 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			rndr->core().is_animating = !rndr->core().is_animating;
 			break;
 		}
+		case 'B':
+		case 'b':
+		{
+			scn->data().drawBoxes(&scn->data().tree);
+			break;
+		}
 		case 'D':
 		case 'd':
 		{
