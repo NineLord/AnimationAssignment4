@@ -19,7 +19,7 @@ bool read_Meshes(igl::opengl::glfw::Viewer* viewer, string file, int amountOfCy)
 			if (line.empty()) break;
 			modelName = line;
 			modelName.erase(modelName.find_last_of('.'));
-			modelName.erase(0, modelName.find_last_of('/') + 1);
+			modelName.erase(0, modelName.find_last_of('\\') + 1);
 			bool amISphere = !strcmp(&modelName[0], "sphere");
 			!amISphere ? times = amountOfCy : times = 1;
 			for (int i = 0; i < times; i++) {
