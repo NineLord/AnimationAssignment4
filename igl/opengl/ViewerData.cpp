@@ -157,8 +157,6 @@ IGL_INLINE void igl::opengl::ViewerData::decimate_by_size(int num_of_faces) {
 		for (j = 0;j < num_of_faces ;j++)
 		{
 			if (!collapse_edge(shortest_edge_and_midpoint, V, F, E, EMAP, EF, EI, Q, Qit, C))	
-			//j % 5 == 0 ? calQ = true : calQ = false;
-			//if(!my_collapse_edge(F, V, calQ))
 				break;
 			num_collapsed++;
 		}
@@ -175,16 +173,25 @@ IGL_INLINE void igl::opengl::ViewerData::decimate_by_size(int num_of_faces) {
 IGL_INLINE void igl::opengl::ViewerData::reset() {
 	MatrixXd V = this->OV;
 	MatrixXi F = this->OF;
+	double cost; 
 
 	edge_flaps(F, E, EMAP, EF, EI);	
-
-	calculate_Kps(F, V);
-	C.resize(E.rows(), V.cols());
-	Qit.resize(E.rows());
+	Qit.resize(E.rows());	
+	C.resize(E.rows(), V.cols());	
+	VectorXd costs(E.rows());
 	Q.clear();
+
+	//calculate_Kps(F, V);
+
 	for (int e = 0;e < E.rows();e++)
 	{
-		double cost = calculate_position_and_cost(e);
+		//double cost = calculate_position_and_cost(e);
+		//Qit[e] = Q.insert(std::pair<double, int>(cost, e)).first;
+
+		cost = e;
+		RowVectorXd p(1, 3);
+		shortest_edge_and_midpoint(e, V, F, E, EMAP, EF, EI, cost, p);
+		C.row(e) = p;
 		Qit[e] = Q.insert(std::pair<double, int>(cost, e)).first;
 	}
 
@@ -249,80 +256,80 @@ IGL_INLINE double igl::opengl::ViewerData::calculate_position_and_cost(int edge)
 	return v_tag.transpose() * Q_tag * v_tag;
 }
 
-IGL_INLINE bool igl::opengl::ViewerData::my_collapse_edge(MatrixXi& F, MatrixXd& V, bool& calQ) {
-#define v_tag E(cost_edge.second, 0)
-#define v_1 E(cost_edge.second, 0)
-#define v_2 E(cost_edge.second, 1)
-#define deleted_e cost_edge.second
-
-	if (Q.empty()) return false;
-
-	// Taking an edge out of the prioratyQ
-	pair<double, int> cost_edge = *Q.begin();
-	Q.erase(Q.begin());
-	Qit[deleted_e] = Q.end();
-
-	// Update F matrix 
-	//vector<int> N;
-	set<int> N;
-
-	int e, i, j;
-	for (e = 0; e < E.rows(); e++) { // Going trough all the edges
-		for (j = 0; j < 2; j++) { // Checking source and destination vertices
-			if (E(e, j) == v_2) {	
-				for (i = 0; i < 3; i++) { // Checking orianted and not in EF and updating F
-					if (F(EF(E(e, j), 0), i) == v_2) {
-						F(EF(E(e, j), 0), i) = v_tag;
-						N.insert(EF(E(e, j), 0));
-					}
-					if (F(EF(E(e, j), 1), i) == v_2) {
-						F(EF(E(e, j), 1), i) = v_tag;
-						N.insert(EF(E(e, j), 1));
-					}
-				}	
-				E(e, j) = v_tag;
-			}		
-		}
-	}
-
-	// Updating V matrix to hold the new vertex
-	Vector3d vertex = C.row(cost_edge.second);
-	V(v_tag, 0) = vertex(0);
-	V(v_tag, 1) = vertex(1);
-	V(v_tag, 2) = vertex(2);
-
-
-	// Update the priorityQ
-	for (auto n : N)
-	{
-		for (int v = 0;v < 3;v++)
-		{
-			// get edge id
-			const int ei = EMAP(v * F.rows() + n);
-			// erase old entry
-			Q.erase(Qit[ei]);
-			// compute cost and potential placement
-			double cost = calculate_position_and_cost(ei);
-			// Replace in queue
-			Qit[ei] = Q.insert(std::pair<double, int>(cost, ei)).first;
-		}
-
-	}
-
-	// Update vertices_planes with new combined Q
-	if (calQ) {
-		(*(vertices_planes.begin() + v_tag)) = sum_Qs(deleted_e);
-	}
-	// Updating data-bases.	
-	
-
-	//cout << "edge " << cost_edge.second <<
-	//	" , cost = " << cost_edge.first <<
-	//	" , new v position " <<
-	//	'( ' << vertex(0) << ' , ' << vertex(1) << ' , ' << vertex(2) << ' )' << endl;
-
-	return true;
-}
+//IGL_INLINE bool igl::opengl::ViewerData::my_collapse_edge(MatrixXi& F, MatrixXd& V, bool& calQ) {
+//#define v_tag E(cost_edge.second, 0)
+//#define v_1 E(cost_edge.second, 0)
+//#define v_2 E(cost_edge.second, 1)
+//#define deleted_e cost_edge.second
+//
+//	if (Q.empty()) return false;
+//
+//	// Taking an edge out of the prioratyQ
+//	pair<double, int> cost_edge = *Q.begin();
+//	Q.erase(Q.begin());
+//	Qit[deleted_e] = Q.end();
+//
+//	// Update F matrix 
+//	//vector<int> N;
+//	set<int> N;
+//
+//	int e, i, j;
+//	for (e = 0; e < E.rows(); e++) { // Going trough all the edges
+//		for (j = 0; j < 2; j++) { // Checking source and destination vertices
+//			if (E(e, j) == v_2) {	
+//				for (i = 0; i < 3; i++) { // Checking orianted and not in EF and updating F
+//					if (F(EF(E(e, j), 0), i) == v_2) {
+//						F(EF(E(e, j), 0), i) = v_tag;
+//						N.insert(EF(E(e, j), 0));
+//					}
+//					if (F(EF(E(e, j), 1), i) == v_2) {
+//						F(EF(E(e, j), 1), i) = v_tag;
+//						N.insert(EF(E(e, j), 1));
+//					}
+//				}	
+//				E(e, j) = v_tag;
+//			}		
+//		}
+//	}
+//
+//	// Updating V matrix to hold the new vertex
+//	Vector3d vertex = C.row(cost_edge.second);
+//	V(v_tag, 0) = vertex(0);
+//	V(v_tag, 1) = vertex(1);
+//	V(v_tag, 2) = vertex(2);
+//
+//
+//	// Update the priorityQ
+//	for (auto n : N)
+//	{
+//		for (int v = 0;v < 3;v++)
+//		{
+//			// get edge id
+//			const int ei = EMAP(v * F.rows() + n);
+//			// erase old entry
+//			Q.erase(Qit[ei]);
+//			// compute cost and potential placement
+//			double cost = calculate_position_and_cost(ei);
+//			// Replace in queue
+//			Qit[ei] = Q.insert(std::pair<double, int>(cost, ei)).first;
+//		}
+//
+//	}
+//
+//	// Update vertices_planes with new combined Q
+//	if (calQ) {
+//		(*(vertices_planes.begin() + v_tag)) = sum_Qs(deleted_e);
+//	}
+//	// Updating data-bases.	
+//	
+//
+//	//cout << "edge " << cost_edge.second <<
+//	//	" , cost = " << cost_edge.first <<
+//	//	" , new v position " <<
+//	//	'( ' << vertex(0) << ' , ' << vertex(1) << ' , ' << vertex(2) << ' )' << endl;
+//
+//	return true;
+//}
 
 IGL_INLINE MatrixXd igl::opengl::ViewerData::sum_Qs(int edge) {
 	int i;

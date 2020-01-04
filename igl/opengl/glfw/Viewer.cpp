@@ -48,6 +48,19 @@
 
 #include <set>
 
+#include <igl/readMESH.h>
+#include <igl\AABB.h>
+#include <igl\point_mesh_squared_distance.h>
+#include <igl\per_edge_normals.h>
+#include <igl\per_vertex_normals.h>
+#include <igl\marching_tets.h>
+#include <igl/edge_lengths.h>
+#include <igl\slice_mask.h>
+#include <igl\upsample.h>
+#include <igl\cat.h>
+#include <igl\signed_distance.h>
+#include <igl\parula.h>
+
 // Internal global variables used for glfw event handling
 //static igl::opengl::glfw::Viewer * __viewer;
 static double highdpi = 1;
@@ -147,16 +160,51 @@ namespace glfw
 
     std::string extension = mesh_file_name_string.substr(last_dot+1);
 
-    if (extension == "off" || extension =="OFF")
-    {
-      Eigen::MatrixXd V;
-      Eigen::MatrixXi F;
-      if (!igl::readOFF(mesh_file_name_string, V, F))
-        return false;
-      data().set_mesh(V,F);
-	  data().save_original_vertices_and_faces();
-	  data().reset();
-    }
+	// Assignment 4 //
+	if (extension == "mesh" || extension == "MESH")
+	{
+		Eigen::MatrixXd V;
+		Eigen::MatrixXi F;
+		Eigen::MatrixXi T;
+		Eigen::MatrixXd FN, VN, EN;
+		Eigen::MatrixXi E;
+		Eigen::VectorXi EMAP;
+		double max_distance = 1;
+		igl::AABB<Eigen::MatrixXd, 3> tree;
+		if (!igl::readMESH(mesh_file_name_string, V, T, F))
+			return false;
+
+		VectorXd sqrD;
+		VectorXi I;
+		MatrixXd C;
+		igl::point_mesh_squared_distance(V, V, F, sqrD, I, C);
+		max_distance = sqrt(sqrD.maxCoeff());
+		tree.init(V, F);
+
+		// Precompute vertex,edge and face normals
+		igl::per_face_normals(V, F, FN);
+		igl::per_vertex_normals(
+			V, F, igl::PER_VERTEX_NORMALS_WEIGHTING_TYPE_ANGLE, FN, VN);
+		igl::per_edge_normals(
+			V, F, igl::PER_EDGE_NORMALS_WEIGHTING_TYPE_UNIFORM, FN, EN, E, EMAP);
+
+	
+		data().set_mesh(V, F);
+		data().save_original_vertices_and_faces();
+		data().reset();
+		return true;
+	}
+	else if (extension == "off" || extension == "OFF")
+	{
+		Eigen::MatrixXd V;
+		Eigen::MatrixXi F;
+		if (!igl::readOFF(mesh_file_name_string, V, F))
+		  return false;
+
+		data().set_mesh(V,F);
+		data().save_original_vertices_and_faces();
+		data().reset();
+	}
     else if (extension == "obj" || extension =="OBJ")
     {
       Eigen::MatrixXd corner_normals;
