@@ -15,7 +15,16 @@
 #include "../per_vertex_normals.h"
 
 #include <iostream>
+#include <set>
+#include <array>
 
+#include <igl/collapse_edge.h>
+#include <igl/shortest_edge_and_midpoint.h>
+#include <igl/edge_flaps.h>
+
+
+using namespace Eigen;
+using namespace std;
 
 IGL_INLINE igl::opengl::ViewerData::ViewerData()
 : dirty(MeshGL::DIRTY_ALL),
@@ -131,6 +140,253 @@ IGL_INLINE void igl::opengl::ViewerData::set_visible(bool value, unsigned int co
 //  to.set(show_faces        , from.is_set(show_faces)        );
 //  to.set(show_lines        , from.is_set(show_lines)        );
 //}
+
+
+//---------------------------------------------------------------------------------------------
+
+/*     A-S-S-I-G-N-M-E-N-T     2       */
+
+IGL_INLINE void igl::opengl::ViewerData::decimate_by_size(int num_of_faces) {	
+	MatrixXd V = this->V;
+	MatrixXi F = this->F;
+	int num_collapsed = 0;
+
+	if (!Q.empty())
+	{
+		int j;									   
+		for (j = 0;j < num_of_faces ;j++)
+		{
+			if (!collapse_edge(shortest_edge_and_midpoint, V, F, E, EMAP, EF, EI, Q, Qit, C))	
+			//j % 5 == 0 ? calQ = true : calQ = false;
+			//if(!my_collapse_edge(F, V, calQ))
+				break;
+			num_collapsed++;
+		}
+
+		if (num_collapsed > 0)
+		{
+			clear();
+			set_mesh(V, F);
+			set_face_based(true);
+		}
+	}
+}
+
+IGL_INLINE void igl::opengl::ViewerData::reset() {
+	MatrixXd V = this->OV;
+	MatrixXi F = this->OF;
+
+	edge_flaps(F, E, EMAP, EF, EI);	
+
+	calculate_Kps(F, V);
+	C.resize(E.rows(), V.cols());
+	Qit.resize(E.rows());
+	Q.clear();
+	for (int e = 0;e < E.rows();e++)
+	{
+		double cost = calculate_position_and_cost(e);
+		Qit[e] = Q.insert(std::pair<double, int>(cost, e)).first;
+	}
+
+	clear();
+	set_mesh(V, F);
+	set_face_based(true);
+}
+
+IGL_INLINE void igl::opengl::ViewerData::calculate_Kps(MatrixXi& F, MatrixXd& V) {
+	int f, v;
+	vector<MatrixXd>* vertices_planes = new vector<MatrixXd>[V.rows()];
+
+	for (f = 0; f < F.rows(); f++)
+	{
+		// Get normal of face
+		Vector3d normal = F_normals.row(f).normalized();
+		// Finding 'd' value in the plane equation
+		double d = -normal(0) * V(F(f, 0), 0) - normal(1) * V(F(f, 0), 1) - normal(2) * V(F(f, 0), 2);
+		Vector4d p(normal(0), normal(1), normal(2), d);
+		// Calculating Kp with p * p^T
+		MatrixXd Kp = p * p.transpose();
+		// Inserting this Kp to each vertex list of K's in the triangle 
+		vertices_planes[F(f, 0)].push_back(Kp);
+		vertices_planes[F(f, 1)].push_back(Kp);
+		vertices_planes[F(f, 2)].push_back(Kp);
+	}
+
+	for (int i = 0; i < V.rows(); i++)
+	{
+		MatrixXd Q = Matrix4d::Zero();
+		vector<MatrixXd>::iterator it;
+		// Sum all Kps
+		for (it = vertices_planes[i].begin(); it != vertices_planes[i].end(); it++) {
+			Q += *it;
+		}
+		this->vertices_planes.push_back(Q);
+
+	}
+	delete[] vertices_planes;
+}
+
+IGL_INLINE double igl::opengl::ViewerData::calculate_position_and_cost(int edge) {
+	MatrixXd Q_tag = sum_Qs(edge);
+	Eigen::FullPivLU<Matrix4d> Q_tag_check(Q_tag);
+	Vector4d v_tag;
+
+	if (Q_tag_check.isInvertible()) {
+		Q_tag.row(3) << 0, 0, 0, 1;
+		Vector4d temp(0, 0, 0, 1);
+		temp = temp.transpose();
+		v_tag = Q_tag.inverse() * temp;		
+	}
+	else {
+		Vector3d vertex = V.row(E(edge, 0)) + V.row(E(edge, 1));
+		vertex = vertex / 2;
+		v_tag << vertex(0), vertex(1), vertex(2), 1;
+	}
+	// Update position of new vertex
+	C.row(edge) << v_tag(0), v_tag(1), v_tag(2);
+
+	// Return cost for combined edge
+	return v_tag.transpose() * Q_tag * v_tag;
+}
+
+IGL_INLINE bool igl::opengl::ViewerData::my_collapse_edge(MatrixXi& F, MatrixXd& V, bool& calQ) {
+#define v_tag E(cost_edge.second, 0)
+#define v_1 E(cost_edge.second, 0)
+#define v_2 E(cost_edge.second, 1)
+#define deleted_e cost_edge.second
+
+	if (Q.empty()) return false;
+
+	// Taking an edge out of the prioratyQ
+	pair<double, int> cost_edge = *Q.begin();
+	Q.erase(Q.begin());
+	Qit[deleted_e] = Q.end();
+
+	// Update F matrix 
+	//vector<int> N;
+	set<int> N;
+
+	int e, i, j;
+	for (e = 0; e < E.rows(); e++) { // Going trough all the edges
+		for (j = 0; j < 2; j++) { // Checking source and destination vertices
+			if (E(e, j) == v_2) {	
+				for (i = 0; i < 3; i++) { // Checking orianted and not in EF and updating F
+					if (F(EF(E(e, j), 0), i) == v_2) {
+						F(EF(E(e, j), 0), i) = v_tag;
+						N.insert(EF(E(e, j), 0));
+					}
+					if (F(EF(E(e, j), 1), i) == v_2) {
+						F(EF(E(e, j), 1), i) = v_tag;
+						N.insert(EF(E(e, j), 1));
+					}
+				}	
+				E(e, j) = v_tag;
+			}		
+		}
+	}
+
+	// Updating V matrix to hold the new vertex
+	Vector3d vertex = C.row(cost_edge.second);
+	V(v_tag, 0) = vertex(0);
+	V(v_tag, 1) = vertex(1);
+	V(v_tag, 2) = vertex(2);
+
+
+	// Update the priorityQ
+	for (auto n : N)
+	{
+		for (int v = 0;v < 3;v++)
+		{
+			// get edge id
+			const int ei = EMAP(v * F.rows() + n);
+			// erase old entry
+			Q.erase(Qit[ei]);
+			// compute cost and potential placement
+			double cost = calculate_position_and_cost(ei);
+			// Replace in queue
+			Qit[ei] = Q.insert(std::pair<double, int>(cost, ei)).first;
+		}
+
+	}
+
+	// Update vertices_planes with new combined Q
+	if (calQ) {
+		(*(vertices_planes.begin() + v_tag)) = sum_Qs(deleted_e);
+	}
+	// Updating data-bases.	
+	
+
+	//cout << "edge " << cost_edge.second <<
+	//	" , cost = " << cost_edge.first <<
+	//	" , new v position " <<
+	//	'( ' << vertex(0) << ' , ' << vertex(1) << ' , ' << vertex(2) << ' )' << endl;
+
+	return true;
+}
+
+IGL_INLINE MatrixXd igl::opengl::ViewerData::sum_Qs(int edge) {
+	int i;
+	MatrixXd Q_tag; // The merged Q of the two Q's of the vertecies of the edge
+
+	Q_tag = *(vertices_planes.begin() + E(edge, 0));
+	Q_tag += *(vertices_planes.begin() + E(edge, 1));
+
+	return Q_tag;
+}
+
+//---------------------------------------------------------------------------------------------
+// Assignment 3
+
+void igl::opengl::ViewerData::Translate(Eigen::Vector3f amt)
+{
+	if (!(strcmp(&model[0], "sphere")))
+	{
+		MyTranslate(amt);
+		return;
+	}
+	if (son != nullptr) {
+		igl::opengl::ViewerData* son = this->son;
+
+		while (son->son != nullptr) {
+			son = son->son;
+		}
+		son->MyTranslate(amt);
+	}
+	else {
+		MyTranslate(amt);
+	}
+}
+
+Eigen::Vector3f igl::opengl::ViewerData::getTopInWorld(Eigen::Matrix4f& world) {
+	igl::opengl::ViewerData* son = this->son;
+	igl::opengl::ViewerData* curr = nullptr;
+	while (son) {
+		curr = son;
+		son = son->son;
+	}
+	Matrix4f trans(world);
+	while (curr && curr != this) {
+		trans = trans * curr->MakeTrans();
+		curr = curr->father;
+	}
+	return (trans * MakeTrans() * topF).block<3, 1>(0, 0);
+}
+
+Eigen::Vector3f igl::opengl::ViewerData::getBottomInWorld(Eigen::Matrix4f& world) {
+	igl::opengl::ViewerData* son = this->son;
+	igl::opengl::ViewerData* curr = nullptr;
+	while (son) {
+		curr = son;
+		son = son->son;
+	}
+	Matrix4f trans(world);
+	while (curr && curr != this) {
+		trans = trans * curr->MakeTrans();
+		curr = curr->father;
+	}
+	return (trans * MakeTrans() * bottomF).block<3, 1>(0, 0);
+}
+// --------------------------------------------------------------------------------------------
 
 IGL_INLINE void igl::opengl::ViewerData::set_colors(const Eigen::MatrixXd &C)
 {

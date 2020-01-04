@@ -42,12 +42,19 @@
 #include <igl/unproject.h>
 #include <igl/serialize.h>
 
+#include <igl/edge_flaps.h>
+#include <igl/shortest_edge_and_midpoint.h>
+#include <igl/collapse_edge.h>
+
+#include <set>
+
 // Internal global variables used for glfw event handling
 //static igl::opengl::glfw::Viewer * __viewer;
 static double highdpi = 1;
 static double scroll_x = 0;
 static double scroll_y = 0;
 
+using namespace Eigen; 
 
 namespace igl
 {
@@ -147,6 +154,8 @@ namespace glfw
       if (!igl::readOFF(mesh_file_name_string, V, F))
         return false;
       data().set_mesh(V,F);
+	  data().save_original_vertices_and_faces();
+	  data().reset();
     }
     else if (extension == "obj" || extension =="OBJ")
     {
@@ -157,6 +166,10 @@ namespace glfw
       Eigen::MatrixXi UV_F;
       Eigen::MatrixXd V;
       Eigen::MatrixXi F;
+	  Eigen::MatrixXi E;
+	  Eigen::VectorXi EMAP;
+	  Eigen::MatrixXi EF;
+	  Eigen::MatrixXi EI;
 
       if (!(
             igl::readOBJ(
@@ -168,7 +181,8 @@ namespace glfw
 
       data().set_mesh(V,F);
       data().set_uv(UV_V,UV_F);
-
+	  data().save_original_vertices_and_faces();	
+	  data().reset();
     }
     else
     {
@@ -192,7 +206,6 @@ namespace glfw
     //for (unsigned int i = 0; i<plugins.size(); ++i)
     //  if (plugins[i]->post_load())
     //    return true;
-
     return true;
   }
 
@@ -362,7 +375,53 @@ namespace glfw
     return 0;
   }
 
+  //IGL_INLINE void igl::opengl::glfw::Viewer::reset() {
+	 // MatrixXd V = data().V;
+	 // MatrixXi F = data().F;
+	 // VectorXi EMAP;
+	 // MatrixXi E, EF, EI;
+	 // typedef std::set<std::pair<double, int> > PriorityQueue;
+	 // PriorityQueue Q;
+	 // std::vector<PriorityQueue::iterator > Qit;	
+	 // MatrixXd C;
+
+	 // edge_flaps(F, E, EMAP, EF, EI);
+	 // Qit.resize(E.rows());
+
+	 // C.resize(E.rows(), V.cols());
+	 // VectorXd costs(E.rows());
+	 // Q.clear();
+	 // for (int e = 0;e < E.rows();e++)
+	 // {
+		//  double cost = e;
+		//  RowVectorXd p(1, 3);
+		//  shortest_edge_and_midpoint(e, V, F, E, EMAP, EF, EI, cost, p);
+		//  C.row(e) = p;
+		//  Qit[e] = Q.insert(std::pair<double, int>(cost, e)).first;
+	 // }	  
+	 // data().clear();
+	 // data().set_mesh(V, F);
+	 // data().set_edges_and_maps(E, EI, EF, EMAP, Q, Qit);
+	 // data().set_face_based(true);
+  //}
  
+  IGL_INLINE void Viewer::Animate(Eigen::Vector3f root, Eigen::Vector3f endpoint, ViewerData* cy, Eigen::Vector3f destPoint) {
+	  Eigen::Vector3f RD(destPoint - root);
+	  Eigen::Vector3f RE(endpoint - root);
+	  float angle = acos(RE.normalized().dot(RD.normalized()));
+
+	  Eigen::Matrix3f rot = Eigen::AngleAxisf(angle, (RE.cross(RD)).normalized()).matrix();
+	  float angleY0 = atan2(rot(0, 1), rot(2, 1));
+	  float angleX = acos(rot(1, 1));
+	  float angleY1 = atan2(rot(1, 0), -rot(1, 2));
+
+	  cy->MyRotateY(angleY0);
+	  cy->MyRotateX(angleX);
+	  cy->MyRotateY(angleY1);
+
+	 // cy->MyRotate((RE.cross(RD)).normalized(), angle);
+  }
+
 
 } // end namespace
 } // end namespace

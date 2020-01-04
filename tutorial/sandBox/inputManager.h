@@ -1,35 +1,67 @@
 #pragma once
 #include "igl/opengl/glfw/Display.h"
+#include <thread>
+#include <thread>
 
 static void glfw_mouse_press(GLFWwindow* window, int button, int action, int modifier)
 {
 
-  Renderer* rndr = (Renderer*) glfwGetWindowUserPointer(window);
-  
-  if (action == GLFW_PRESS)
-  {
-	  double x2, y2;
-	  glfwGetCursorPos(window, &x2, &y2);
-	  igl::opengl::glfw::Viewer* scn = rndr->GetScene();
-	  bool found = false;
-	  int i = 0, savedIndx = scn->selected_data_index;
-	  
-	  for (; i < scn->data_list.size() && !found;i++)
-	  { 
-		  scn->selected_data_index = i;
-		  found = rndr->Picking(x2, y2);
-	  }
-	  
-	  if(!found)
-	  {
-		  std::cout << "not found " << std::endl;
-		  scn->selected_data_index = savedIndx;
-	  }
-	  else
-		  std::cout << "found " << i - 1 << std::endl;
-	  rndr->UpdatePosition(x2, y2);
-	 
-  }
+	Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
+
+	if (action == GLFW_PRESS)
+	{
+		rndr->core().camera_dfar;
+
+		double x2, y2;
+		glfwGetCursorPos(window, &x2, &y2);
+		igl::opengl::glfw::Viewer* scn = rndr->GetScene();
+		/*bool found = false;*/
+		int i = 0, savedIndx = scn->selected_data_index;
+
+		double z_buffer, z_min;
+		int closest = -1;
+		for (; i < scn->data_list.size() /*&& !found*/; i++)
+		{
+			scn->selected_data_index = i;
+			/*found = rndr->Picking(x2, y2, z_buffer);*/
+			if (rndr->Picking(x2, y2, z_buffer)) {
+				// std::cout << "found(" << i << ") = <" << x2 << ',' << y2 << ',' << z_buffer << '>' << std::endl;
+				z_buffer = abs(z_buffer);
+				if (closest == -1) {
+					z_min = z_buffer;
+					closest = i;
+				}
+				else if (z_buffer < z_min) {
+					z_min = z_buffer;
+					closest = i;
+				}
+			}
+		}
+
+		if (closest == -1)
+		{
+			std::cout << "didn't find anything" << std::endl;
+			scn->selected_data_index = savedIndx;
+			//scn->selected_data_index = scn->data_list.size(); // sharon
+			scn->worldSelect = true;
+		}
+		else {
+			scn->selected_data_index = closest;
+			scn->worldSelect = false;
+			// std::cout << "choose(" << closest << ")" << std::endl;
+
+			// Just so we see which mesh is selected now
+			Eigen::Vector3d red(2, 0.0, 0.0);
+			scn->data().uniform_colors(red, red, red);
+			scn->data_list[savedIndx].uniform_colors(Eigen::Vector3d(51.0 / 255.0, 43.0 / 255.0, 33.3 / 255.0),
+				Eigen::Vector3d(255.0 / 255.0, 228.0 / 255.0, 58.0 / 255.0),
+				Eigen::Vector3d(255.0 / 255.0, 235.0 / 255.0, 80.0 / 255.0));
+		}
+
+		//scn->worldSelect = true;
+		rndr->UpdatePosition(x2, y2);
+
+	}
 }
 
 
@@ -38,25 +70,26 @@ static void glfw_mouse_press(GLFWwindow* window, int button, int action, int mod
 //  __viewer->key_pressed(codepoint, modifier);
 //}
 
- void glfw_mouse_move(GLFWwindow* window, double x, double y)
+void glfw_mouse_move(GLFWwindow* window, double x, double y)
 {
-	 Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
-	 rndr->UpdatePosition(x, y);
-	 if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-	 {
-		 rndr->MouseProcessing(GLFW_MOUSE_BUTTON_RIGHT);
-	 }
-	 else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-	 {
-		 rndr->MouseProcessing(GLFW_MOUSE_BUTTON_LEFT);
-	 }
+	Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
+	rndr->UpdatePosition(x, y);
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+	{
+		rndr->MouseProcessing(GLFW_MOUSE_BUTTON_RIGHT);
+	}
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+	{
+		rndr->MouseProcessing(GLFW_MOUSE_BUTTON_LEFT);
+	}
 }
 
 static void glfw_mouse_scroll(GLFWwindow* window, double x, double y)
 {
 	Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
-	rndr->GetScene()->data().MyScale(Eigen::Vector3f(1 + y * 0.01,1 + y * 0.01,1+y*0.01));
-
+	igl::opengl::glfw::Viewer* scn = rndr->GetScene();
+	scn->worldSelect ? scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, 0, y / 500.0f), false) :
+		scn->data().Translate(Eigen::Vector3f(0, 0, y / 500.0f));
 }
 
 void glfw_window_size(GLFWwindow* window, int width, int height)
@@ -64,7 +97,7 @@ void glfw_window_size(GLFWwindow* window, int width, int height)
 	Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
 	//igl::opengl::glfw::Viewer* scn = rndr->GetScene();
 
-    rndr->post_resize(window,width, height);
+	rndr->post_resize(window, width, height);
 
 }
 
@@ -78,20 +111,48 @@ void glfw_window_size(GLFWwindow* window, int width, int height)
 //	fputs(description, stderr);
 //}
 
+static void CalculateIK(igl::opengl::glfw::Viewer* scn, igl::opengl::ViewerData* last, Eigen::Vector3f destPoint) {
+
+	// Start animation with the last cylinder
+	// Calculating root and endpoint 
+	igl::opengl::ViewerData* curr = nullptr;
+	Eigen::Vector3f endpoint(last->getTopInWorld(scn->MakeTrans()));
+	Eigen::Vector3f root(last->getBottomInWorld(scn->MakeTrans()));
+	scn->Animate(root, endpoint, last, destPoint);
+
+	curr = last->son;
+	while (curr) {
+		endpoint = last->getTopInWorld(scn->MakeTrans());
+		root = curr->getBottomInWorld(scn->MakeTrans());
+		scn->Animate(root, endpoint, curr, destPoint);
+		curr = curr->son;
+	}
+}
+
+
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int modifier)
 {
-	Renderer* rndr = (Renderer*) glfwGetWindowUserPointer(window);
+	Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
 	igl::opengl::glfw::Viewer* scn = rndr->GetScene();
+	float alpha = 15 / 180.0f;
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
-	else if(action == GLFW_PRESS || action == GLFW_REPEAT)
+	else if (action == GLFW_PRESS || action == GLFW_REPEAT)
 		switch (key)
 		{
 		case 'A':
 		case 'a':
 		{
 			rndr->core().is_animating = !rndr->core().is_animating;
+			break;
+		}
+		case 'D':
+		case 'd':
+		{
+			std::cout <<
+				(scn->MakeTrans() * scn->data_list[0].MakeTrans() * Eigen::Vector4f(0, 0, 0, 1)).block<3, 1>(0, 0)
+				<< std::endl;
 			break;
 		}
 		case 'F':
@@ -107,6 +168,11 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			scn->data().invert_normals = !scn->data().invert_normals;
 			break;
 		}
+		case ' ':
+		{
+			scn->isIk = !(scn->isIk);
+			break;
+		}
 		case 'L':
 		case 'l':
 		{
@@ -119,17 +185,51 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			rndr->core().orthographic = !rndr->core().orthographic;
 			break;
 		}
+		case 'P':
+		case 'p':
+		{
+			if (scn->worldSelect) {
+				cout << scn->getRotation() << endl;
+			}
+			else {
+				igl::opengl::ViewerData* son = scn->data().son;
+				igl::opengl::ViewerData* curr = nullptr;
+				while (son) {
+					curr = son;
+					son = son->son;
+				}
+				Matrix4f trans = scn->MakeTrans();
+				while (curr && curr != &(scn->data())) {
+					trans = trans * curr->MakeTrans();
+					curr = curr->father;
+				}
+				trans = trans * scn->data().MakeTrans();
+				std::cout << trans.block<3, 3>(0, 0) << std::endl;
+			}
+			break;
+		}
 		case 'T':
 		case 't':
 		{
-			rndr->core().toggle(scn->data().show_faces);
+			//rndr->core().toggle(scn->data().show_faces);
+			if (!scn->worldSelect)
+			{
+				cout << scn->data().getTopInWorld(scn->MakeTrans()) << endl;
+			}
 			break;
 		}
 		case '1':
 		case '2':
 		{
+			scn->worldSelect = false;
+			int savedIndx = scn->selected_data_index;
 			scn->selected_data_index =
 				(scn->selected_data_index + scn->data_list.size() + (key == '2' ? 1 : -1)) % scn->data_list.size();
+			Eigen::Vector3d red(2, 0.0, 0.0);
+			scn->data().uniform_colors(red, red, red);
+			scn->data_list[savedIndx].uniform_colors(Eigen::Vector3d(51.0 / 255.0, 43.0 / 255.0, 33.3 / 255.0),
+				Eigen::Vector3d(255.0 / 255.0, 228.0 / 255.0, 58.0 / 255.0),
+				Eigen::Vector3d(255.0 / 255.0, 235.0 / 255.0, 80.0 / 255.0));
 			break;
 		}
 		case '[':
@@ -144,6 +244,42 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 		case ':':
 			scn->data().show_faceid = !scn->data().show_faceid;
 			break;
+		case GLFW_KEY_UP:
+			if (strcmp(&(scn->data().model[0]), "sphere"))
+				scn->data().MyRotateX(-alpha);
+			break;
+		case GLFW_KEY_DOWN:
+			if (strcmp(&(scn->data().model[0]), "sphere"))
+				scn->data().MyRotateX(alpha);
+			break;
+		case GLFW_KEY_LEFT:
+			if (strcmp(&(scn->data().model[0]), "sphere")) {
+				scn->data().MyRotateY(alpha);
+				/*Eigen::Matrix4f product = scn->MakeTrans();
+				if (scn->data().mySon == nullptr)
+					scn->data().MyRotateY(product, alpha);
+				else {
+					igl::opengl::ViewerData* son = scn->data().mySon;
+
+
+					while (son->mySon != nullptr) {
+						son = son->mySon;
+					}
+					while (son != &(scn->data())) {
+						product = product * son->MakeTrans();
+						son = son->myFather;
+					}
+
+					scn->data().MyRotateY(product, alpha);
+					//scn->data().MyRotateY(scn->data().getRy(), 15 / 180.0f);
+				}*/
+			}
+			break;
+		case GLFW_KEY_RIGHT:
+			if (strcmp(&(scn->data().model[0]), "sphere")) {
+				scn->data().MyRotateY(-alpha);
+			}
+			break;
 		default: break;//do nothing
 		}
 }
@@ -156,7 +292,7 @@ void Init(Display& display)
 	display.AddResizeCallBack(glfw_window_size);
 }
 
-
+/*
 //IGL_INLINE bool Renderer::mouse_down(igl::opengl::glfw::Viewer::MouseButton button, int modifier)
 //{
 //	// Remember mouse location at down even if used by callback/plugin
@@ -358,3 +494,4 @@ void Init(Display& display)
 	//	}
 	//	return true;
 	//}
+*/
