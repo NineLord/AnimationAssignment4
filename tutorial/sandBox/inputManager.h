@@ -112,38 +112,6 @@ void glfw_window_size(GLFWwindow* window, int width, int height)
 //	fputs(description, stderr);
 //}
 
-static void CalculateIK(igl::opengl::glfw::Viewer* scn, igl::opengl::ViewerData* last, Eigen::Vector3f destPoint) {
-
-	// Start animation with the last cylinder
-	// Calculating root and endpoint 
-	igl::opengl::ViewerData* curr = nullptr;
-	Eigen::Vector3f endpoint(last->getTopInWorld(scn->MakeTrans()));
-	Eigen::Vector3f root(last->getBottomInWorld(scn->MakeTrans()));
-	scn->Animate(root, endpoint, last, destPoint);
-
-	curr = last->son;
-	while (curr) {
-		endpoint = last->getTopInWorld(scn->MakeTrans());
-		root = curr->getBottomInWorld(scn->MakeTrans());
-		scn->Animate(root, endpoint, curr, destPoint);
-		curr = curr->son;
-	}
-}
-
-static void draw_box(Eigen::AlignedBox3d &box) {
-	
-}
-
-static void draw_tree(igl::AABB<Eigen::MatrixXd, 3>& tree) {
-	draw_box(tree.m_box);
-
-	if (tree.m_left != nullptr)
-		draw_tree(*(tree.m_left));
-
-	if (tree.m_right != nullptr)
-		draw_tree(*(tree.m_right));
-}
-
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int modifier)
 {
 	Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
@@ -287,7 +255,7 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 
 		case 'K':
 		case 'k':
-			draw_tree(scn->data().tree);
+			scn->data().drawBoxes(&(scn->data().tree));
 			break;
 		case GLFW_KEY_UP:
 			if (scn->move_models) scn->data().direction = Vector3f(0, 1, 0);

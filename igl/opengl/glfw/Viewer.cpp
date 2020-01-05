@@ -472,10 +472,12 @@ namespace glfw
 
   IGL_INLINE void Viewer::isIntersection() {
 
-	  if(data_list[0].tree.m_box.intersects(data_list[1].tree.m_box))
-		 // move_models = false;
+      if (data_list[0].tree.m_box.intersects(data_list[1].tree.m_box)) {
+          move_models = false;
+      }
 	  //AlignedBox<double, 3> b = data_list[0].tree.m_box.intersection(data_list[1].tree.m_box);
   }
+
 } // end namespace
 } // end namespace
 }
