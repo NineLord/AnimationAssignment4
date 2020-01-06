@@ -116,7 +116,7 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 {
 	Renderer* rndr = (Renderer*)glfwGetWindowUserPointer(window);
 	igl::opengl::glfw::Viewer* scn = rndr->GetScene();
-	float alpha = 15 / 180.0f;
+	float alpha = 15 / 180.0f, dst = 0.25;
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GL_TRUE);
 
@@ -257,17 +257,57 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 		case 'k':
 			scn->data().drawBoxes(&(scn->data().tree));
 			break;
+		case 'T':
+		case 't':
+			scn->isIntersection();
+			break;
 		case GLFW_KEY_UP:
-			if (scn->move_models) scn->data().direction = Vector3f(0, 1, 0);
+			if (scn->worldSelect)
+				scn->MyRotateX(-alpha);
+			else
+				scn->data().MyRotateX(-alpha);
 			break;
 		case GLFW_KEY_DOWN:
-			if (scn->move_models) scn->data().direction = Vector3f(0, -1, 0);
+			if (scn->worldSelect)
+				scn->MyRotateX(alpha);
+			else
+			scn->data().MyRotateX(alpha);
 			break;
 		case GLFW_KEY_LEFT:
-			if (scn->move_models) scn->data().direction = Vector3f(-1, 0, 0);
+			if (scn->worldSelect)
+				scn->MyRotateY(alpha);
+			else
+			scn->data().MyRotateY(alpha);
 			break;
 		case GLFW_KEY_RIGHT:
-			if (scn->move_models) scn->data().direction = Vector3f(1, 0, 0);
+			if (scn->worldSelect)
+				scn->MyRotateY(-alpha);
+			else
+			scn->data().MyRotateY(-alpha);
+			break;
+		case GLFW_KEY_KP_2:
+			if (scn->worldSelect)
+				scn->MyTranslate(Eigen::Vector3f(0, -dst, 0));
+			else
+				scn->data().MyTranslate(Eigen::Vector3f(0, -dst, 0));
+			break;
+		case GLFW_KEY_KP_4:
+			if (scn->worldSelect)
+				scn->MyTranslate(Eigen::Vector3f(-dst, 0, 0));
+			else
+				scn->data().MyTranslate(Eigen::Vector3f(-dst, 0, 0));
+			break;
+		case GLFW_KEY_KP_6:
+			if (scn->worldSelect)
+				scn->MyTranslate(Eigen::Vector3f(dst, 0, 0));
+			else
+				scn->data().MyTranslate(Eigen::Vector3f(dst, 0, 0));
+			break;
+		case GLFW_KEY_KP_8:
+			if (scn->worldSelect)
+				scn->MyTranslate(Eigen::Vector3f(0, dst, 0));
+			else
+				scn->data().MyTranslate(Eigen::Vector3f(0, dst, 0));
 			break;
 		default: break;//do nothing
 		}

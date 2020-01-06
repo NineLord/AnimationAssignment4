@@ -143,10 +143,10 @@ void Renderer::MouseProcessing(int button)
 		}
 		// Selected object
 		else {
-			 scn->data().MyRotate(Eigen::Vector3f(1, 0, 0), xrel / 180.0f, true);
-			 scn->data().MyRotate(Eigen::Vector3f(0, 0, 1), yrel / 180.0f, true);
-			//scn->data().MyRotateX(xrel / 180.0f);
-			//scn->data().MyRotateY(yrel / 180.0f);
+			// scn->data().MyRotate(Eigen::Vector3f(1, 0, 0), xrel / 180.0f, true);
+			// scn->data().MyRotate(Eigen::Vector3f(0, 0, 1), yrel / 180.0f, true);
+			scn->data().MyRotateX(xrel / 180.0f);
+			scn->data().MyRotateY(yrel / 180.0f);
 		}
 	}
 

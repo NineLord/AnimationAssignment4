@@ -44,7 +44,8 @@ void adjustModels(igl::opengl::glfw::Viewer* viewer) {
 		viewer->data().direction = Vector3f(val, 0, 0);
 	}
 	// Adjusting the "camera"
-	viewer->TranslateInSystem(viewer->MakeTrans(), Vector3f(0, 0, -2), true);
+	viewer->MyTranslate(Vector3f(0, 0, -2));
+	// viewer->TranslateInSystem(viewer->MakeTrans(), Vector3f(0, 0, -2), true);
 }
 
 // Assignment 3 //

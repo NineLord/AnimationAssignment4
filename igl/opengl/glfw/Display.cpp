@@ -137,10 +137,8 @@ bool Display::launch_rendering(bool loop)
 	igl::opengl::glfw::Viewer* scn = renderer->GetScene();
 	while (!glfwWindowShouldClose(window))
 	{
-		scn->isIntersection();
 		if (scn->move_models) {
 			// Assignment 3 
-
 			//igl::opengl::ViewerData* last = nullptr;
 			//igl::opengl::ViewerData* first = nullptr;
 			//Vector3f destPoint;
@@ -179,7 +177,7 @@ bool Display::launch_rendering(bool loop)
 			//	scn->isIk = false;
 			//}
 			scn->data().Translate(scn->data().velocity * scn->data().direction);
-			
+			scn->isIntersection(); // Will add it back when done testing
 		}
 
 		double tic = igl::get_seconds();

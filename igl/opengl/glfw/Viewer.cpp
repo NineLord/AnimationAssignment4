@@ -471,11 +471,89 @@ namespace glfw
   }
 
   IGL_INLINE void Viewer::isIntersection() {
+      /*
+       * Notes: if (R > R0+R1) then it means the objects are sperated according to that test,
+       * so no need to keep checking the rest of the test (so we 'return').
+       * If we didn't return until we finished all the 15 test, then we are intersecting, so we
+       * put false which will stop them from moving.
+       */
+      //------------------------------One time calculation----------------------------------//
 
-      if (data_list[0].tree.m_box.intersects(data_list[1].tree.m_box)) {
-          move_models = false;
+      Eigen::Matrix4f world = MakeTrans();                  // So we don't calculate this twice
+      Eigen::Matrix4f model0 = data_list[0].MakeTrans();    // So we don't calculate this twice
+      Eigen::Matrix4f model1 = data_list[1].MakeTrans();    // So we don't calculate this twice
+
+      Eigen::MatrixXd Ai(3,3); // Calculate this only once, since the X,Y,Z axis of each cube is the same vector.
+      Ai << (world * model0 * Eigen::Vector4f(1, 0, 0, 0)).block<3, 1>(0, 0).cast<double>(), // A0
+            (world * model0 * Eigen::Vector4f(0, 1, 0, 0)).block<3, 1>(0, 0).cast<double>(), // A1
+            (world * model0 * Eigen::Vector4f(0, 0, 1, 0)).block<3, 1>(0, 0).cast<double>(); // A2
+
+      Eigen::MatrixXd Bj(3, 3); // Calculate this only once, since the X,Y,Z axis of each cube is the same vector.
+      Bj << (world * model1 * Eigen::Vector4f(1, 0, 0, 0)).block<3, 1>(0, 0).cast<double>(), // B0
+            (world * model1 * Eigen::Vector4f(0, 1, 0, 0)).block<3, 1>(0, 0).cast<double>(), // B1
+            (world * model1 * Eigen::Vector4f(0, 0, 1, 0)).block<3, 1>(0, 0).cast<double>(); // B2
+
+      //--------------------------------Per layer of boxes calculation-----------------------//
+
+      igl::AABB<Eigen::MatrixXd, 3>& tree0 = data_list[0].tree;
+      igl::AABB<Eigen::MatrixXd, 3>& tree1 = data_list[1].tree;
+      Eigen::Vector3d sizes0 = tree0.m_box.sizes(); // a0 = sizes0(0), a1 = sizes0(1), a2 = sizes0(2)
+      Eigen::Vector3d sizes1 = tree1.m_box.sizes(); // b0 = sizes1(0), b1 = sizes1(1), b2 = sizes1(2)
+      Eigen::Vector4d temp; // Help to convert vector of 4 to 3.
+
+      temp << tree0.m_box.center(), 1;
+      Eigen::Vector3d C0 = ((world * model0).cast<double>() * temp).block<3, 1>(0, 0);
+
+      temp << tree1.m_box.center(), 1;
+      Eigen::Vector3d C1 = ((world * model1).cast<double>() * temp).block<3, 1>(0, 0);
+
+      Eigen::Vector3d D = C1 - C0;
+
+      Eigen::Matrix3d C;
+      for (int i = 0; i <= 2; i++) {
+          for (int j = 0; j <= 2; j++) {
+              C(i, j) = Ai.col(i).dot(Bj.col(j));
+          }
       }
-	  //AlignedBox<double, 3> b = data_list[0].tree.m_box.intersection(data_list[1].tree.m_box);
+
+      //---------------------------------------Test-----------------------------------------//
+
+      double R, R0, R1; // For readability, don't worry it still hard to read
+      for (int i = 0; i <= 2; i++) {
+          // Tests 1,2,3
+          R0 = sizes0(i);
+          R1 = sizes1(0) * abs(C(i, 0)) + sizes1(1) * abs(C(i, 1)) + sizes1(2) * abs(C(i, 2));
+          R = abs(Ai.col(i).dot(D));
+          if (R > (R0 + R1)) {
+              std::cout << "Test " << i + 1 << std::endl;
+              return;
+          }
+
+          // Tests 4,5,6
+          R0 = sizes0(0) * abs(C(0, i)) + sizes0(1) * abs(C(1, i)) + sizes0(2) * abs(C(2, i));
+          R1 = sizes1(i);
+          R = abs(Bj.col(i).dot(D));
+          if (R > (R0 + R1)) {
+              std::cout << "Test " << i + 4 << std::endl;
+              return;
+          }
+
+          // Tests 7,8,9,10,11,12,13,14,15
+          for (int j = 0; j <= 2; j++) {
+              R0 = sizes0(i == 0 ? 1 : 0) * abs(C(i == 2 ? 1 : 2, j)) + sizes0(i == 2 ? 1 : 2) * abs(C((i == 0 ? 1 : 0), j));
+              R1 = sizes1(j == 0 ? 1 : 0) * abs(C(i, (j == 2 ? 1 : 2))) + sizes1(j == 2 ? 1 : 2) * abs(C(i, (j == 0 ? 1 : 0)));
+              R = abs(C((i + 1) % 3, j) * Ai.col((i + 2) % 3).dot(D) - C((i + 2) % 3, j) * Ai.col((i + 1) % 3).dot(D));
+              if (R > (R0 + R1)) {
+                  std::cout << "Test " << i * 3 + j + 7 << std::endl;
+                  return;
+              }
+          }
+      }
+
+      // ALL the tests shows that they intersect so we stop
+      move_models = false;
+
+      //------------------------------------------------------------------------------------//      
   }
 
 } // end namespace
