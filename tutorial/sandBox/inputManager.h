@@ -261,6 +261,15 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 		case 't':
 			scn->isIntersection();
 			break;
+		case 'R':
+		case 'r':
+			for (int i = 0; i < scn->data_list.size(); i++) {
+				scn->data_list[i].ResetMovable();
+				scn->data_list[i].MyRotateX(2.5);
+				scn->data_list[i].MyRotateY(0.35);
+				scn->data_list[i].Translate(Vector3f(i == 0 ? 1.5 : -1.5, 0, 0));
+			}
+			break;
 		case GLFW_KEY_UP:
 			if (scn->worldSelect)
 				scn->MyRotateX(-alpha);
@@ -303,11 +312,23 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			else
 				scn->data().MyTranslate(Eigen::Vector3f(dst, 0, 0));
 			break;
+		case GLFW_KEY_KP_7:
+			if (scn->worldSelect)
+				scn->MyTranslate(Eigen::Vector3f(0, 0, -dst));
+			else
+				scn->data().MyTranslate(Eigen::Vector3f(0, 0, -dst));
+			break;
 		case GLFW_KEY_KP_8:
 			if (scn->worldSelect)
 				scn->MyTranslate(Eigen::Vector3f(0, dst, 0));
 			else
 				scn->data().MyTranslate(Eigen::Vector3f(0, dst, 0));
+			break;
+		case GLFW_KEY_KP_9:
+			if (scn->worldSelect)
+				scn->MyTranslate(Eigen::Vector3f(0, 0, dst));
+			else
+				scn->data().MyTranslate(Eigen::Vector3f(0, 0, dst));
 			break;
 		default: break;//do nothing
 		}

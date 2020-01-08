@@ -91,3 +91,10 @@ Eigen::Vector3f Movable::GetCenterOfRotation() {
 Eigen::Matrix3f Movable::getRotation() {
 	return MakeTrans().block<3, 3>(0, 0);
 }
+
+void Movable::ResetMovable() {
+	Tout = Eigen::Transform<float, 3, Eigen::Affine>::Identity();
+	Tin = Eigen::Transform<float, 3, Eigen::Affine>::Identity();
+	Rx = Eigen::Matrix3f::Identity();
+	Ry = Eigen::Matrix3f::Identity();
+}

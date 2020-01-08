@@ -42,8 +42,7 @@ IGL_INLINE igl::opengl::ViewerData::ViewerData()
   label_color(0,0,0.04,1),
   shininess(35.0f),
   id(-1),
-  is_visible(1),
-  direction(1,0,0)
+  is_visible(1)
 {
   clear();
 };

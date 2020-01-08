@@ -13,10 +13,9 @@ public:
 	void MyRotate(Eigen::Vector3f rotAxis, float angle);
 	void MyRotate(Eigen::Vector3f rotAxis, float angle, bool preTranslation);
 	//---------Shaked---------//
-	void MyRotate(Eigen::Quaternionf rot);
-	void MyRotate(Eigen::Matrix3f rot);
 	void MyRotateX(float angle);
 	void MyRotateY(float angle);
+	void ResetMovable();
 	//------------------------//
 	void MyScale(Eigen::Vector3f amt);
 	void ScaleInSystem(Eigen::Matrix4f mat, Eigen::Vector3f amt);
