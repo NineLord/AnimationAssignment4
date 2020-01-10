@@ -495,10 +495,10 @@ namespace glfw
 		  Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.TopLeftCeil));     // B2
 
 	 temp1 << box0.center(), 1;
-	 Eigen::Vector3d C0 = /*(model0 * temp1).block<3, 1>(0, 0);*/ (model0 * Vector4d(0, 0, 0, 1)).block<3, 1>(0, 0);
+	 Eigen::Vector3d C0 = (model0 * temp1).block<3, 1>(0, 0);;
 
 	 temp1 << box1.center(), 1;
-	 Eigen::Vector3d C1 = /*(model1 * temp1).block<3, 1>(0, 0);*/ (model1 * Vector4d(0, 0, 0, 1)).block<3, 1>(0, 0);
+	 Eigen::Vector3d C1 = (model1 * temp1).block<3, 1>(0, 0); ;
 
 	 Eigen::Vector3d D = C1 - C0;
 	 // cout << "D:\n" << D << endl;
