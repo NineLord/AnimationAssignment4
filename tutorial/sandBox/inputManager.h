@@ -259,8 +259,16 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			break;
 		case 'T':
 		case 't':
-			scn->isIntersection();
+		{
+			// scn->isIntersection();
+			scn->data().add_points(scn->data().tree.m_box.center().transpose(), Eigen::RowVector3d::Random());
+
+			// Eigen::Vector4d temp1;
+			// temp1 << scn->data().tree.m_box.center(), 1;
+			// scn->data().add_points((scn->data().MakeTransD() * temp1).block<3, 1>(0, 0).transpose(), Eigen::RowVector3d::Random());
+
 			break;
+		}
 		case 'R':
 		case 'r':
 			for (int i = 0; i < scn->data_list.size(); i++) {

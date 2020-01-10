@@ -145,6 +145,9 @@ public:
 
 	// Assignment 4
 	void isIntersection();
+    bool isIntersectBox(Eigen::AlignedBox3d &box0, Eigen::AlignedBox3d &box1,
+                        Eigen::Matrix4d &model0, Eigen::Matrix4d &model1,
+                        Eigen::Matrix3d &Rot0, Eigen::Matrix3d &Rot1);
 	bool move_models = false;
     
 
