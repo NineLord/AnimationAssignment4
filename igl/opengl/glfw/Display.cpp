@@ -135,6 +135,12 @@ bool Display::launch_rendering(bool loop)
 	glfwGetWindowSize(window, &windowWidth, &windowHeight);
 	renderer->post_resize(window, windowWidth, windowHeight);
 	igl::opengl::glfw::Viewer* scn = renderer->GetScene();
+	Eigen::Matrix4d model0;
+	Eigen::Matrix4d model1;
+	Eigen::Matrix3d Rot0;
+	Eigen::Matrix3d Rot1;
+	igl::AABB<Eigen::MatrixXd, 3>* tree0 = &scn->data_list[0].tree;
+	igl::AABB<Eigen::MatrixXd, 3>* tree1 = &scn->data_list[1].tree;
 	while (!glfwWindowShouldClose(window))
 	{
 		if (scn->move_models) {
@@ -177,7 +183,11 @@ bool Display::launch_rendering(bool loop)
 			//	scn->isIk = false;
 			//}
 			scn->data().Translate(scn->data().velocity * scn->data().direction);
-			scn->isIntersection(); // Will add it back when done testing
+			model0 = scn->data_list[0].MakeTrans().cast<double>();
+			model1 = scn->data_list[1].MakeTrans().cast<double>();
+			Rot0 = model0.block<3, 3>(0, 0); 
+			Rot1 = model1.block<3, 3>(0, 0); 
+			scn->isIntersection(tree0, tree1, model0, model1, Rot0, Rot1); // Will add it back when done testing			
 		}
 
 		double tic = igl::get_seconds();

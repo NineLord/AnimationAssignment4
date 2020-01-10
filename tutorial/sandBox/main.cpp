@@ -39,7 +39,7 @@ void adjustModels(igl::opengl::glfw::Viewer* viewer) {
 		float val;
 		i == 0 ? val = 1.5 : val = -1.5;
 		viewer->data().Translate(Vector3f(val, 0, 0));
-		viewer->data().velocity = 0.05;
+		viewer->data().velocity = 0.02;
 		i == 0 ? val = -1 : val = 1;
 		viewer->data().direction = Vector3f(val, 0, 0);
 	}

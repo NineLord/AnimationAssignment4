@@ -126,8 +126,8 @@ void Renderer::MouseProcessing(int button)
 	if (button == 1) {
 		// World
 		if (scn->worldSelect) {
-			scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(-xrel / 500.0f, 0, 0), true);
-			scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, yrel / 500.0f, 0), true);
+			scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(-xrel / 500.0f, 0, 0), false);
+			scn->TranslateInSystem(scn->MakeTrans(), Eigen::Vector3f(0, yrel / 500.0f, 0), false);
 		}
 		// Selected object
 		else {
