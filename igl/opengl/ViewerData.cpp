@@ -424,7 +424,7 @@ void::igl::opengl::ViewerData::drawBox(AlignedBox<double, 3> m_box, RowVector3d 
 		2, 6,
 		7, 3;
 
-	line_width = 3;
+	line_width = 2;
 	point_size = 10;
 	show_lines = false;
 

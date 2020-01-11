@@ -17,7 +17,7 @@ bool read_Meshes(igl::opengl::glfw::Viewer* viewer, string file) {
 	conFile.open(file, ios::in);
 	if (conFile.is_open()) {
 		while (getline(conFile, line)) {
-			viewer->load_mesh_from_file(line);
+			viewer->load_mesh_from_file(line);			
 			viewer->load_mesh_from_file(line);
 			break;
 		}
@@ -42,6 +42,7 @@ void adjustModels(igl::opengl::glfw::Viewer* viewer) {
 		viewer->data().velocity = 0.05;
 		i == 0 ? val = -1 : val = 1;
 		viewer->data().direction = Vector3f(val, 0, 0);
+		viewer->data().show_lines = false;
 	}
 	// Adjusting the "camera"
 	viewer->MyTranslate(Vector3f(0, 0, -2));

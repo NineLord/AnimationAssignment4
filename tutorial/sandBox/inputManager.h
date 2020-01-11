@@ -52,8 +52,10 @@ static void glfw_mouse_press(GLFWwindow* window, int button, int action, int mod
 			// std::cout << "choose(" << closest << ")" << std::endl;
 
 			// Just so we see which mesh is selected now
-			Eigen::Vector3d red(2, 0.0, 0.0);
-			scn->data().uniform_colors(red, red, red);
+			//Eigen::Vector3d red(1.0, 0.0, 0.0);			
+			scn->data().uniform_colors(Eigen::Vector3d(1.0, 0.0, 0.0),
+				Eigen::Vector3d(0.5, 0.3, 0.35),
+				Eigen::Vector3d(1.0, 0.5, 0.5));
 			scn->data_list[savedIndx].uniform_colors(Eigen::Vector3d(51.0 / 255.0, 43.0 / 255.0, 33.3 / 255.0),
 				Eigen::Vector3d(255.0 / 255.0, 228.0 / 255.0, 58.0 / 255.0),
 				Eigen::Vector3d(255.0 / 255.0, 235.0 / 255.0, 80.0 / 255.0));
@@ -215,8 +217,9 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 			int savedIndx = scn->selected_data_index;
 			scn->selected_data_index =
 				(scn->selected_data_index + scn->data_list.size() + (key == '2' ? 1 : -1)) % scn->data_list.size();
-			Eigen::Vector3d red(2, 0.0, 0.0);
-			scn->data().uniform_colors(red, red, red);
+			scn->data().uniform_colors(Eigen::Vector3d(1.0, 0.0, 0.0),
+				Eigen::Vector3d(0.5, 0.3, 0.35),
+				Eigen::Vector3d(1.0, 0.5, 0.5));
 			scn->data_list[savedIndx].uniform_colors(Eigen::Vector3d(51.0 / 255.0, 43.0 / 255.0, 33.3 / 255.0),
 				Eigen::Vector3d(255.0 / 255.0, 228.0 / 255.0, 58.0 / 255.0),
 				Eigen::Vector3d(255.0 / 255.0, 235.0 / 255.0, 80.0 / 255.0));
