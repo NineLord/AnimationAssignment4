@@ -480,14 +480,16 @@ namespace glfw
       Eigen::Vector4d temp1;                  // Help to convert vector of 4 to 3
 
       Eigen::Matrix3d A;
-      A << Rot0 * (box0.corner(box0.TopLeftFloor) - box0.corner(box0.TopRightFloor)),   // A0
+      A = Rot0;
+      /*A << Rot0 * (box0.corner(box0.TopLeftFloor) - box0.corner(box0.TopRightFloor)),   // A0
            Rot0 * (box0.corner(box0.TopLeftFloor) - box0.corner(box0.BottomLeftFloor)), // A1
-           Rot0 * (box0.corner(box0.TopLeftFloor) - box0.corner(box0.TopLeftCeil));     // A2
+           Rot0 * (box0.corner(box0.TopLeftFloor) - box0.corner(box0.TopLeftCeil));     // A2*/
 
       Eigen::Matrix3d B;
-      B << Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.TopRightFloor)),   // B0
+      B = Rot1;
+      /*B << Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.TopRightFloor)),   // B0
            Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.BottomLeftFloor)), // B1
-           Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.TopLeftCeil));     // B2
+           Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.TopLeftCeil));     // B2*/
 
       temp1 << box0.center(), 1;
       Eigen::Vector3d C0 = (model0 * temp1).block<3, 1>(0, 0);
@@ -498,11 +500,12 @@ namespace glfw
       Eigen::Vector3d D = C1 - C0;
 
       Eigen::Matrix3d C;
-      for (int i = 0; i <= 2; i++) {
+      C = Rot0.inverse() * Rot1;
+      /*for (int i = 0; i <= 2; i++) {
           for (int j = 0; j <= 2; j++) {
               C(i, j) = A.col(i).dot(B.col(j));
           }
-      }
+      }*/
 
       //---------------------------------------Test-----------------------------------------//
 
@@ -681,7 +684,7 @@ namespace glfw
                                        Eigen::Matrix3d& Rot0, Eigen::Matrix3d& Rot1) {
       if (isIntersectBox(tree0->m_box, tree1->m_box, model0, model1, Rot0, Rot1))
           return false;
-
+      
       if (tree0->is_leaf() && tree1->is_leaf()) {
           data_list[0].drawBox(tree0->m_box, Eigen::RowVector3d::Random().normalized());
           data_list[1].drawBox(tree1->m_box, Eigen::RowVector3d::Random().normalized());
