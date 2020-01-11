@@ -425,7 +425,7 @@ void::igl::opengl::ViewerData::drawBox(AlignedBox<double, 3> m_box, RowVector3d 
 		7, 3;
 
 	line_width = 2;
-	point_size = 10;
+	point_size = 2;
 	show_lines = false;
 
 	// Plot the corners of the bounding box as points

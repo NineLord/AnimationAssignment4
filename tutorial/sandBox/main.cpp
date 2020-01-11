@@ -43,6 +43,9 @@ void adjustModels(igl::opengl::glfw::Viewer* viewer) {
 		i == 0 ? val = -1 : val = 1;
 		viewer->data().direction = Vector3f(val, 0, 0);
 		viewer->data().show_lines = false;
+		i == 1 ? viewer->data().uniform_colors(Eigen::Vector3d(1.0, 0.0, 0.0),
+			Eigen::Vector3d(0.5, 0.3, 0.35),
+			Eigen::Vector3d(1.0, 0.5, 0.5)) : 0;
 	}
 	// Adjusting the "camera"
 	viewer->MyTranslate(Vector3f(0, 0, -2));
