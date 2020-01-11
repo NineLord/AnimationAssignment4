@@ -183,11 +183,15 @@ bool Display::launch_rendering(bool loop)
 			//	scn->isIk = false;
 			//}
 			scn->data().Translate(scn->data().velocity * scn->data().direction);
+<<<<<<< Updated upstream
 			model0 = scn->data_list[0].MakeTrans().cast<double>();
 			model1 = scn->data_list[1].MakeTrans().cast<double>();
 			Rot0 = model0.block<3, 3>(0, 0); 
 			Rot1 = model1.block<3, 3>(0, 0); 
 			scn->isIntersection(tree0, tree1, model0, model1, Rot0, Rot1); // Will add it back when done testing			
+=======
+			scn->isIntersection();
+>>>>>>> Stashed changes
 		}
 
 		double tic = igl::get_seconds();
