@@ -46,6 +46,7 @@ static void glfw_mouse_press(GLFWwindow* window, int button, int action, int mod
 			scn->worldSelect = true;
 		}
 		else {
+			std::cout << closest << std::endl;
 			scn->selected_data_index = closest;
 			scn->worldSelect = false;
 			// std::cout << "choose(" << closest << ")" << std::endl;

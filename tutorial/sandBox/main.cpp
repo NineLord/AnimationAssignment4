@@ -39,7 +39,7 @@ void adjustModels(igl::opengl::glfw::Viewer* viewer) {
 		float val;
 		i == 0 ? val = 1.5 : val = -1.5;
 		viewer->data().Translate(Vector3f(val, 0, 0));
-		viewer->data().velocity = 0.02;
+		viewer->data().velocity = 0.05;
 		i == 0 ? val = -1 : val = 1;
 		viewer->data().direction = Vector3f(val, 0, 0);
 	}
@@ -189,4 +189,3 @@ int main(int argc, char* argv[])
 	disp->launch_rendering(true);
 	delete disp;
 }
-

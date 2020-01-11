@@ -144,12 +144,10 @@ public:
 	//bool isIk = false;
 
 	// Assignment 4
-	void isIntersection(igl::AABB<Eigen::MatrixXd, 3>* tree0, igl::AABB<Eigen::MatrixXd, 3>* tree1,						
-						Eigen::Matrix4d& model0, Eigen::Matrix4d& model1,
-						Eigen::Matrix3d& Rot0, Eigen::Matrix3d& Rot1);
-    bool isIntersectBox(Eigen::AlignedBox3d &box0, Eigen::AlignedBox3d &box1,
-                        Eigen::Matrix4d &model0, Eigen::Matrix4d &model1,
-                        Eigen::Matrix3d &Rot0, Eigen::Matrix3d &Rot1);
+    void isIntersection();
+    bool isIntersectBox(Eigen::AlignedBox3d& box0, Eigen::AlignedBox3d& box1,
+                        Eigen::Matrix4d& model0, Eigen::Matrix4d& model1,
+                        Eigen::Matrix3d& Rot0, Eigen::Matrix3d& Rot1);
     bool recursionIsIntersection(igl::AABB<Eigen::MatrixXd, 3>* tree0, igl::AABB<Eigen::MatrixXd, 3>* tree1,
                                  Eigen::Matrix4d& model0, Eigen::Matrix4d& model1,
                                  Eigen::Matrix3d& Rot0, Eigen::Matrix3d& Rot1);
