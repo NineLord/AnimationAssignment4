@@ -46,6 +46,7 @@ void adjustModels(igl::opengl::glfw::Viewer* viewer) {
 		i == 1 ? viewer->data().uniform_colors(Eigen::Vector3d(1.0, 0.0, 0.0),
 			Eigen::Vector3d(0.5, 0.3, 0.35),
 			Eigen::Vector3d(1.0, 0.5, 0.5)) : 0;
+		viewer->data().drawBox(viewer->data().tree.m_box, Eigen::RowVector3d(0, 255, 0));
 	}
 	// Adjusting the "camera"
 	viewer->MyTranslate(Vector3f(0, 0, -2));

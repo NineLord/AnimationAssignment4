@@ -474,22 +474,15 @@ namespace glfw
   IGL_INLINE bool Viewer::isIntersectBox(Eigen::AlignedBox3d& box0, Eigen::AlignedBox3d& box1,
                                          Eigen::Matrix4d& model0, Eigen::Matrix4d& model1,
                                          Eigen::Matrix3d& Rot0, Eigen::Matrix3d& Rot1) {
-
-      Eigen::Vector3d a = box0.sizes() / 1.5; // a0 = a(0), a1 = a(1), a2 = a(2)
-      Eigen::Vector3d b = box1.sizes() / 1.5; // b0 = b(0), b1 = b(1), b2 = b(2)
+      Eigen::Vector3d a = box0.sizes() / 2; // a0 = a(0), a1 = a(1), a2 = a(2)
+      Eigen::Vector3d b = box1.sizes() / 2; // b0 = b(0), b1 = b(1), b2 = b(2)
       Eigen::Vector4d temp1;                  // Help to convert vector of 4 to 3
 
       Eigen::Matrix3d A;
       A = Rot0;
-      /*A << Rot0 * (box0.corner(box0.TopLeftFloor) - box0.corner(box0.TopRightFloor)),   // A0
-           Rot0 * (box0.corner(box0.TopLeftFloor) - box0.corner(box0.BottomLeftFloor)), // A1
-           Rot0 * (box0.corner(box0.TopLeftFloor) - box0.corner(box0.TopLeftCeil));     // A2*/
 
       Eigen::Matrix3d B;
       B = Rot1;
-      /*B << Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.TopRightFloor)),   // B0
-           Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.BottomLeftFloor)), // B1
-           Rot1 * (box1.corner(box1.TopLeftFloor) - box1.corner(box1.TopLeftCeil));     // B2*/
 
       temp1 << box0.center(), 1;
       Eigen::Vector3d C0 = (model0 * temp1).block<3, 1>(0, 0);
@@ -500,13 +493,8 @@ namespace glfw
       Eigen::Vector3d D = C1 - C0;
 
       Eigen::Matrix3d C;
-      C = Rot0.inverse() * Rot1;
-      /*for (int i = 0; i <= 2; i++) {
-          for (int j = 0; j <= 2; j++) {
-              C(i, j) = A.col(i).dot(B.col(j));
-          }
-      }*/
-
+      C = Rot0.transpose() * Rot1;
+      
       //---------------------------------------Test-----------------------------------------//
 
       double R, R0, R1; // For readability
@@ -516,7 +504,7 @@ namespace glfw
           R1 = b(0) * abs(C(i, 0)) + b(1) * abs(C(i, 1)) + b(2) * abs(C(i, 2));
           R = abs(A.col(i).dot(D));
           if (R > (R0 + R1)) {
-              std::cout << "Test " << i + 1 << std::endl;
+              // std::cout << "Test " << i + 1 << std::endl;
               return true;
           }
 
@@ -525,7 +513,7 @@ namespace glfw
           R1 = b(i);
           R = abs(B.col(i).dot(D));
           if (R > (R0 + R1)) {
-              std::cout << "Test " << i + 4 << std::endl;
+              // std::cout << "Test " << i + 4 << std::endl;
               return true;
           }
 
@@ -535,135 +523,14 @@ namespace glfw
               R1 = b((j == 0 ? 1 : 0)) * abs(C(i, (j == 2 ? 1 : 2))) + b((j == 2 ? 1 : 2)) * abs(C(i, (j == 0 ? 1 : 0)));
               R = abs(C(((i + 1) % 3), j) * A.col(((i + 2) % 3)).dot(D) - C(((i + 2) % 3), j) * A.col(((i + 1) % 3)).dot(D));
               if (R > (R0 + R1)) {
-                  std::cout << "Test " << i * 3 + j + 7 << std::endl;
+                  // std::cout << "Test " << i * 3 + j + 7 << std::endl;
                   return true;
               }
           }
       }
 
-      /*
-      R0 = a(0);
-      R1 = (b(0) * abs(C(0, 0))) + (b(1) * abs(C(0, 1))) + (b(2) * abs(C(0, 2)));
-      R  = abs(A.col(0).dot(D));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 1" << std::endl;
-          return;
-      }
-
-      R0 = a(1);
-      R1 = (b(0) * abs(C(1, 0))) + (b(1) * abs(C(1, 1))) + (b(2) * abs(C(1, 2)));
-      R = abs(A.col(1).dot(D));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 2" << std::endl;
-          return;
-      }
-
-      R0 = a(2);
-      R1 = (b(0) * abs(C(2, 0))) + (b(1) * abs(C(2, 1))) + (b(2) * abs(C(2, 2)));
-      R = abs(A.col(2).dot(D));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 3" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(0, 0))) + (a(1) * abs(C(1, 0))) + (a(2) * abs(C(2, 0)));
-      R1 = b(1);
-      R = abs(B.col(0).dot(D));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 4" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(0, 1))) + (a(1) * abs(C(1, 1))) + (a(2) * abs(C(2, 1)));
-      R1 = b(1);
-      R = abs(B.col(1).dot(D));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 5" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(0, 2))) + (a(1) * abs(C(1, 2))) + (a(2) * abs(C(2, 2)));
-      R1 = b(2);
-      R = abs(B.col(2).dot(D));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 6" << std::endl;
-          return;
-      }
-
-      R0 = (a(1) * abs(C(2, 0))) + (a(2) * abs(C(1, 0)));
-      R1 = (b(1) * abs(C(0, 2))) + (b(2) * abs(C(0, 1)));
-      R = abs((C(1, 0) * A.col(2).dot(D)) - (C(2, 0) * A.col(1).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 7" << std::endl;
-          return;
-      }
-
-      R0 = (a(1) * abs(C(2, 1))) + (a(2) * abs(C(1, 1)));
-      R1 = (b(0) * abs(C(0, 2))) + (b(2) * abs(C(0, 0)));
-      R = abs((C(1, 1) * A.col(2).dot(D)) - (C(2, 1) * A.col(1).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 8" << std::endl;
-          return;
-      }
-
-      R0 = (a(1) * abs(C(2, 2))) + (a(2) * abs(C(1, 2)));
-      R1 = (b(0) * abs(C(0, 1))) + (b(1) * abs(C(0, 0)));
-      R = abs((C(1, 2) * A.col(2).dot(D)) - (C(2, 2) * A.col(1).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 9" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(2, 0))) + (a(2) * abs(C(0, 0)));
-      R1 = (b(1) * abs(C(1, 2))) + (b(2) * abs(C(1, 1)));
-      R = abs((C(2, 0) * A.col(0).dot(D)) - (C(0, 0) * A.col(2).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 10" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(2, 1))) + (a(2) * abs(C(0, 1)));
-      R1 = (b(0) * abs(C(1, 2))) + (b(2) * abs(C(1, 0)));
-      R = abs((C(2, 1) * A.col(0).dot(D)) - (C(0, 1) * A.col(2).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 11" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(2, 2))) + (a(2) * abs(C(0, 2)));
-      R1 = (b(0) * abs(C(1, 1))) + (b(1) * abs(C(1, 0)));
-      R = abs((C(2, 2) * A.col(0).dot(D)) - (C(0, 2) * A.col(2).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 12" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(1, 0))) + (a(1) * abs(C(0, 0)));
-      R1 = (b(1) * abs(C(2, 2))) + (b(2) * abs(C(2, 1)));
-      R = abs((C(0, 0) * A.col(1).dot(D)) - (C(1, 0) * A.col(0).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 13" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(1, 1))) + (a(1) * abs(C(0, 1)));
-      R1 = (b(0) * abs(C(2, 2))) + (b(2) * abs(C(2, 0)));
-      R = abs((C(0, 1) * A.col(1).dot(D)) - (C(1, 1) * A.col(0).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 14" << std::endl;
-          return;
-      }
-
-      R0 = (a(0) * abs(C(1, 2))) + (a(1) * abs(C(0, 2)));
-      R1 = (b(0) * abs(C(2, 1))) + (b(1) * abs(C(2, 0)));
-      R = abs((C(0, 2) * A.col(1).dot(D)) - (C(1, 2) * A.col(0).dot(D)));
-      if (R > (R0 + R1)) {
-          std::cout << "Test 15" << std::endl;
-          return;
-      }*/
-
       // ALL the tests shows that they intersect so we stop
-      std::cout << "All Tests Failed" << std::endl;
+      // std::cout << "All Tests Failed" << std::endl;
       return false;
   }
 
@@ -701,28 +568,6 @@ namespace glfw
                  recursionIsIntersection(tree0->m_right, tree1->m_left, model0, model1, Rot0, Rot1) ||
                  recursionIsIntersection(tree0->m_right, tree1->m_right, model0, model1, Rot0, Rot1);
       }
-
-      /*bool temp;
-      if (tree0->is_leaf() && tree1->is_leaf()) {
-          temp = true;
-      } else if (tree0->is_leaf()) {
-          temp = recursionIsIntersection(tree0, tree1->m_left , model0, model1, Rot0, Rot1) ||
-                 recursionIsIntersection(tree0, tree1->m_right, model0, model1, Rot0, Rot1);
-      } else if (tree1->is_leaf()) {
-          temp = recursionIsIntersection(tree0->m_left , tree1, model0, model1, Rot0, Rot1) ||
-                 recursionIsIntersection(tree0->m_right, tree1, model0, model1, Rot0, Rot1);
-      } else {
-          temp = recursionIsIntersection(tree0->m_left , tree1->m_left , model0, model1, Rot0, Rot1) ||
-                 recursionIsIntersection(tree0->m_left , tree1->m_right, model0, model1, Rot0, Rot1) ||
-                 recursionIsIntersection(tree0->m_right, tree1->m_left , model0, model1, Rot0, Rot1) ||
-                 recursionIsIntersection(tree0->m_right, tree1->m_right, model0, model1, Rot0, Rot1);
-      }
-
-      if (temp) {
-          data_list[0].drawBox(tree0->m_box, Eigen::RowVector3d::Random().normalized());
-          data_list[1].drawBox(tree1->m_box, Eigen::RowVector3d::Random().normalized());
-      }
-      return temp;*/
   }
 
 } // end namespace

@@ -225,6 +225,9 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 				Eigen::Vector3d(255.0 / 255.0, 235.0 / 255.0, 80.0 / 255.0));
 			break;
 		}
+		case '3':
+			scn->worldSelect = true;
+			break;
 		case '[':
 		case ']':
 		{
