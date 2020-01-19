@@ -204,6 +204,7 @@ namespace glfw
 		data().set_mesh(V,F);
 		data().save_original_vertices_and_faces();
 		data().reset();
+        data().tree.init(V, F);
 	}
     else if (extension == "obj" || extension =="OBJ")
     {
@@ -231,6 +232,7 @@ namespace glfw
       data().set_uv(UV_V,UV_F);
 	  data().save_original_vertices_and_faces();	
 	  data().reset();
+      data().tree.init(V, F);
     }
     else
     {
@@ -553,19 +555,20 @@ namespace glfw
           return false;
       
       if (tree0->is_leaf() && tree1->is_leaf()) {
-          data_list[0].drawBox(tree0->m_box, Eigen::RowVector3d::Random().normalized());
-          data_list[1].drawBox(tree1->m_box, Eigen::RowVector3d::Random().normalized());
+          Eigen::RowVector3d temp = Eigen::RowVector3d::Random().normalized();
+          data_list[0].drawBox(tree0->m_box, temp);
+          data_list[1].drawBox(tree1->m_box, temp);
           return true;
       } else if (tree0->is_leaf()) {
-          return recursionIsIntersection(tree0, tree1->m_left, model0, model1, Rot0, Rot1) ||
+          return recursionIsIntersection(tree0, tree1->m_left, model0, model1, Rot0, Rot1) |
                  recursionIsIntersection(tree0, tree1->m_right, model0, model1, Rot0, Rot1);
       } else if (tree1->is_leaf()) {
-          return recursionIsIntersection(tree0->m_left, tree1, model0, model1, Rot0, Rot1) ||
+          return recursionIsIntersection(tree0->m_left, tree1, model0, model1, Rot0, Rot1) |
                  recursionIsIntersection(tree0->m_right, tree1, model0, model1, Rot0, Rot1);
       } else {
-          return recursionIsIntersection(tree0->m_left, tree1->m_left, model0, model1, Rot0, Rot1) ||
-                 recursionIsIntersection(tree0->m_left, tree1->m_right, model0, model1, Rot0, Rot1) ||
-                 recursionIsIntersection(tree0->m_right, tree1->m_left, model0, model1, Rot0, Rot1) ||
+          return recursionIsIntersection(tree0->m_left, tree1->m_left, model0, model1, Rot0, Rot1) |
+                 recursionIsIntersection(tree0->m_left, tree1->m_right, model0, model1, Rot0, Rot1) |
+                 recursionIsIntersection(tree0->m_right, tree1->m_left, model0, model1, Rot0, Rot1) |
                  recursionIsIntersection(tree0->m_right, tree1->m_right, model0, model1, Rot0, Rot1);
       }
   }
