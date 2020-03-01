@@ -1,4 +1,4 @@
-# EngineForAnimationCourse
+# Engine For Animation Course - Assignment 4
 Graphic Engine based on Libigl
 
 For compiling:
@@ -8,3 +8,5 @@ For compiling:
 4. If everything pass successfully got to the destination folder and launch the project. 
 5. Set sandBox as a startup project and compile the project (it could take few mineutes);  
 6. You have 3 object in the scene you can switch objects with '1' and '2' keys and move them with the mouse.
+
+This project demonstrate collision detection between two objects in 3D.
